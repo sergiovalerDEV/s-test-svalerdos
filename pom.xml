@@ -13,10 +13,10 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
-		<!-- Updated to required version -->
-		<app.runtime>4.9.0</app.runtime>
-		<!-- Fixed plugin version - using a known working version -->
-		<mule.maven.plugin.version>4.9.0</mule.maven.plugin.version>
+		<!-- Versión del runtime de Mule -->
+		<app.runtime>4.4.0</app.runtime>
+		<!-- Versión del plugin de Maven que está disponible -->
+		<mule.maven.plugin.version>3.8.0</mule.maven.plugin.version>
 	</properties>
 
 	<build>
@@ -61,7 +61,6 @@
 	</build>
 
 	<dependencies>
-		<!-- Updated connector versions for compatibility with Mule 4.9.0 -->
 		<dependency>
 			<groupId>org.mule.connectors</groupId>
 			<artifactId>mule-http-connector</artifactId>
