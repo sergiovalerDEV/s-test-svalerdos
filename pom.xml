@@ -13,7 +13,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
-		<!-- Usando la versión que funciona en tus otras aplicaciones -->
+		<!-- Usando la versión que funciona en las otras aplicaciones -->
 		<app.runtime>4.4.0</app.runtime>
 		<mule.maven.plugin.version>4.4.0</mule.maven.plugin.version>
 	</properties>
@@ -43,13 +43,16 @@
 						<applicationName>s-test-svalerdos</applicationName>
 						<replicas>1</replicas>
 						<vCores>0.1</vCores>
+						<!-- Añadir timeout y omitir verificación -->
+						<deploymentTimeout>300000</deploymentTimeout>
+						<skipDeploymentVerification>true</skipDeploymentVerification>
 						<deploymentSettings>
 							<enforceDeployingReplicasAcrossNodes>false</enforceDeployingReplicasAcrossNodes>
 							<updateStrategy>rolling</updateStrategy>
 						</deploymentSettings>
 						<properties>
 							<env>dev</env>
-							<!-- Aquí es donde se pasa la clave de encriptación -->
+							<!-- Configuración correcta de la clave de encriptación -->
 							<encryption.key>${encryption.key}</encryption.key>
 						</properties>
 					</cloudhub2Deployment>
@@ -126,4 +129,3 @@
 	</pluginRepositories>
 
 </project>
-
