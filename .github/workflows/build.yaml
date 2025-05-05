@@ -71,4 +71,5 @@ jobs:
         USERNAME: ${{ secrets.ANYPOINT_PLATFORM_USERNAME }}
         PASSWORD: ${{ secrets.ANYPOINT_PLATFORM_PASSWORD }}
       run: |         
-       artifactName=$(ls *.jar | head -1) && mvn clean deploy -DmuleDeploy -Dmule.artifact=$artifactName -Danypoint.username="$USERNAME" -Danypoint.password="$PASSWORD" -Ddeployment.type=cloudhub -Dmule.environment=Sandbox -Dapp.runtime=4.9.0 -Dcloudhub.application.name=s-test-svalerdos -Dcloudhub.region=us-east-2 -Dcloudhub.worker.type=MICRO -Dcloudhub.workers=1
+        artifactName=$(ls *.jar | head -1)         
+        mvn deploy -DmuleDeploy -Dmule.artifact=$artifactName -Danypoint.username="$USERNAME" -Danypoint.password="$PASSWORD"
