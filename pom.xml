@@ -13,8 +13,8 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
-		<!-- Actualizado a la versión exacta 4.9.3:3 -->
-		<app.runtime>4.9.3:3</app.runtime>
+		<!-- Versión con "e" al final como se sugirió en el foro -->
+		<app.runtime>4.9.3e</app.runtime>
 		<mule.maven.plugin.version>4.4.0</mule.maven.plugin.version>
 	</properties>
 
