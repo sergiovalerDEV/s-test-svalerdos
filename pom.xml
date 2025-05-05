@@ -4,7 +4,7 @@
 
 	<groupId>153b0d20-821e-4f82-b36a-7e0e28e44a93</groupId>
 	<artifactId>s-test-svalerdos</artifactId>
-	<version>1.0.7</version>
+	<version>1.0.8</version>
 	<packaging>mule-application</packaging>
 
 	<name>s-test-svalerdos</name>
@@ -13,10 +13,13 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
-		<!-- Cambiado a versión LTS con soporte extendido -->
-		<app.runtime>4.6.0</app.runtime>
-		<!-- Versión compatible con el runtime 4.6.0 -->
-		<mule.maven.plugin.version>3.8.0</mule.maven.plugin.version>
+		<!-- Versión de runtime compatible con CloudHub 2.0 -->
+		<app.runtime>4.4.0</app.runtime>
+		<!-- Versión del plugin que es más estable con Maven moderno -->
+		<mule.maven.plugin.version>3.5.4</mule.maven.plugin.version>
+		<!-- Añadimos esta propiedad para evitar problemas con dependencias -->
+		<maven.compiler.target>1.8</maven.compiler.target>
+		<maven.compiler.source>1.8</maven.compiler.source>
 	</properties>
 
 	<build>
@@ -25,6 +28,23 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-clean-plugin</artifactId>
 				<version>3.2.0</version>
+			</plugin>
+			<!-- Añadimos el plugin de dependencias para resolver problemas -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<version>3.3.0</version>
+				<executions>
+					<execution>
+						<id>analyze</id>
+						<goals>
+							<goal>analyze-only</goal>
+						</goals>
+						<configuration>
+							<failOnWarning>false</failOnWarning>
+						</configuration>
+					</execution>
+				</executions>
 			</plugin>
 			<plugin>
 				<groupId>org.mule.tools.maven</groupId>
@@ -44,7 +64,6 @@
 						<applicationName>s-test-svalerdos</applicationName>
 						<replicas>1</replicas>
 						<vCores>0.1</vCores>
-						<!-- Configuración para evitar problemas de despliegue -->
 						<deploymentTimeout>600000</deploymentTimeout>
 						<skipDeploymentVerification>true</skipDeploymentVerification>
 						<deploymentSettings>
@@ -57,28 +76,61 @@
 						</properties>
 					</cloudhub2Deployment>
 				</configuration>
+				<!-- Añadimos dependencias explícitas para resolver el problema de Aether -->
+				<dependencies>
+					<dependency>
+						<groupId>org.eclipse.aether</groupId>
+						<artifactId>aether-api</artifactId>
+						<version>1.1.0</version>
+					</dependency>
+					<dependency>
+						<groupId>org.eclipse.aether</groupId>
+						<artifactId>aether-util</artifactId>
+						<version>1.1.0</version>
+					</dependency>
+					<dependency>
+						<groupId>org.eclipse.aether</groupId>
+						<artifactId>aether-impl</artifactId>
+						<version>1.1.0</version>
+					</dependency>
+					<dependency>
+						<groupId>org.eclipse.aether</groupId>
+						<artifactId>aether-connector-basic</artifactId>
+						<version>1.1.0</version>
+					</dependency>
+					<dependency>
+						<groupId>org.eclipse.aether</groupId>
+						<artifactId>aether-transport-file</artifactId>
+						<version>1.1.0</version>
+					</dependency>
+					<dependency>
+						<groupId>org.eclipse.aether</groupId>
+						<artifactId>aether-transport-http</artifactId>
+						<version>1.1.0</version>
+					</dependency>
+				</dependencies>
 			</plugin>
 		</plugins>
 	</build>
 
 	<dependencies>
-		<!-- Versiones de conectores compatibles con Mule 4.6.0 -->
+		<!-- Versiones de conectores compatibles con Mule 4.4.0 -->
 		<dependency>
 			<groupId>org.mule.connectors</groupId>
 			<artifactId>mule-http-connector</artifactId>
-			<version>1.7.3</version>
+			<version>1.5.25</version>
 			<classifier>mule-plugin</classifier>
 		</dependency>
 		<dependency>
 			<groupId>org.mule.connectors</groupId>
 			<artifactId>mule-sockets-connector</artifactId>
-			<version>1.2.3</version>
+			<version>1.2.2</version>
 			<classifier>mule-plugin</classifier>
 		</dependency>
 		<dependency>
 			<groupId>org.mule.modules</groupId>
 			<artifactId>mule-apikit-module</artifactId>
-			<version>1.8.2</version>
+			<version>1.5.5</version>
 			<classifier>mule-plugin</classifier>
 		</dependency>
 		<dependency>
@@ -91,13 +143,13 @@
 		<dependency>
 			<groupId>com.mulesoft.connectors</groupId>
 			<artifactId>mule-salesforce-connector</artifactId>
-			<version>10.16.7</version>
+			<version>10.12.1</version>
 			<classifier>mule-plugin</classifier>
 		</dependency>
 		<dependency>
 			<groupId>com.mulesoft.modules</groupId>
 			<artifactId>mule-secure-configuration-property-module</artifactId>
-			<version>1.2.5</version>
+			<version>1.2.3</version>
 			<classifier>mule-plugin</classifier>
 		</dependency>
 	</dependencies>
@@ -115,6 +167,15 @@
 			<url>https://repository.mulesoft.org/releases/</url>
 			<layout>default</layout>
 		</repository>
+		<repository>
+			<id>central</id>
+			<name>Central Repository</name>
+			<url>https://repo.maven.apache.org/maven2</url>
+			<layout>default</layout>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+		</repository>
 	</repositories>
 
 	<pluginRepositories>
@@ -123,6 +184,15 @@
 			<name>MuleSoft Releases Repository</name>
 			<layout>default</layout>
 			<url>https://repository.mulesoft.org/releases/</url>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+		</pluginRepository>
+		<pluginRepository>
+			<id>central</id>
+			<name>Central Repository</name>
+			<url>https://repo.maven.apache.org/maven2</url>
+			<layout>default</layout>
 			<snapshots>
 				<enabled>false</enabled>
 			</snapshots>
