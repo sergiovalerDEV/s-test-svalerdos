@@ -31,21 +31,26 @@
 				<extensions>true</extensions>
 				<configuration>
 					<classifier>mule-application</classifier>
-					<cloudHubDeployment>
+					<!-- Cambiado de cloudHubDeployment a cloudhub2Deployment -->
+					<cloudhub2Deployment>
 						<uri>https://anypoint.mulesoft.com</uri>
-						<muleVersion>4.9.0</muleVersion>
+						<provider>MC</provider>
+						<environment>Sandbox</environment>
+						<target>Cloudhub-US-East-2</target>
+						<muleVersion>${app.runtime}</muleVersion>
 						<username>${anypoint.username}</username>
 						<password>${anypoint.password}</password>
 						<applicationName>s-test-svalerdos</applicationName>
-						<environment>Sandbox</environment>
-						<workerType>MICRO</workerType>
-						<workers>1</workers>
-						<objectStoreV2>true</objectStoreV2>
-						<region>us-east-1</region>
+						<replicas>1</replicas>
+						<vCores>0.1</vCores>
+						<deploymentSettings>
+							<enforceDeployingReplicasAcrossNodes>false</enforceDeployingReplicasAcrossNodes>
+							<updateStrategy>rolling</updateStrategy>
+						</deploymentSettings>
 						<properties>
 							<env>dev</env>
 						</properties>
-					</cloudHubDeployment>
+					</cloudhub2Deployment>
 				</configuration>
 			</plugin>
 		</plugins>
