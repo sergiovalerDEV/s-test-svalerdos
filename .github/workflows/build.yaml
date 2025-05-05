@@ -23,7 +23,7 @@ jobs:
       with:         
         distribution: 'zulu'         
         java-version: 8
-    # Añadir credenciales al settings.xml para que Maven pueda acceder al Exchange
+    # Configure Maven settings
     - name: Configure Maven settings with Anypoint credentials
       run: |
         mkdir -p ~/.m2
@@ -37,7 +37,7 @@ jobs:
           </servers>
         </settings>" > ~/.m2/settings.xml
     - name: Build with Maven  
-      run: mvn -B package --file pom.xml     
+      run: mvn -B clean package --file pom.xml
     - name: Upload artifact        
       uses: actions/upload-artifact@v4       
       with:           
@@ -67,6 +67,18 @@ jobs:
       with:         
         name: artifacts
         path: target/
+    - name: Configure Maven settings with Anypoint credentials
+      run: |
+        mkdir -p ~/.m2
+        echo "<settings>
+          <servers>
+            <server>
+              <id>anypoint-exchange-v3</id>
+              <username>${{ secrets.ANYPOINT_PLATFORM_USERNAME }}</username>
+              <password>${{ secrets.ANYPOINT_PLATFORM_PASSWORD }}</password>
+            </server>
+          </servers>
+        </settings>" > ~/.m2/settings.xml
     - name: Deploy to Sandbox
       run: |
         mvn deploy -DmuleDeploy -DskipDeploymentVerification=true \
