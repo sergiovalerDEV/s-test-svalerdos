@@ -13,7 +13,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
-		<!-- Mantenemos esta propiedad para la compilación local -->
+		<!-- Versión específica para la compilación local -->
 		<app.runtime>4.9.3</app.runtime>
 		<mule.maven.plugin.version>4.4.0</mule.maven.plugin.version>
 	</properties>
@@ -37,13 +37,15 @@
 						<provider>MC</provider>
 						<environment>Sandbox</environment>
 						<target>Cloudhub-US-East-2</target>
-						<!-- Omitimos la versión para que se detecte automáticamente -->
-						<!-- <muleVersion>${app.runtime}</muleVersion> -->
+						<!-- Especificamos una versión compatible -->
+						<muleVersion>4.7.0</muleVersion>
 						<username>${anypoint.username}</username>
 						<password>${anypoint.password}</password>
 						<applicationName>s-test-svalerdos</applicationName>
 						<replicas>1</replicas>
 						<vCores>0.1</vCores>
+						<!-- Añadimos un timeout para el despliegue -->
+						<deploymentTimeout>600000</deploymentTimeout>
 						<deploymentSettings>
 							<enforceDeployingReplicasAcrossNodes>false</enforceDeployingReplicasAcrossNodes>
 							<updateStrategy>rolling</updateStrategy>
