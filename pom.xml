@@ -33,14 +33,14 @@
 					<classifier>mule-application</classifier>
 				</configuration>
 				<deployment>
-    <type>cloudhub</type>
-    <muleVersion>${app.runtime}</muleVersion>
-    <applicationName>${mule.app.name}</applicationName>
-    <environment>Sandbox</environment>
-    <workerType>MICRO</workerType>
-    <region>us-east-2</region>
-    <workers>1</workers>
-</deployment>
+    				<type>cloudhub</type>
+   					<muleVersion>${app.runtime}</muleVersion>
+    				<applicationName>${mule.app.name}</applicationName>
+    				<environment>Sandbox</environment>
+    				<workerType>MICRO</workerType>
+    				<region>us-east-2</region>
+    				<workers>1</workers>
+				</deployment>
 			</plugin>
 		</plugins>
 	</build>
