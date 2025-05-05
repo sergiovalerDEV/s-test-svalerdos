@@ -1,8 +1,6 @@
 {
-  "minMuleVersion": "3.8.0",
-  "secureProperties": [
-    "encryption.key",
-    "anypoint.username",
-    "anypoint.password"
+  "minMuleVersion": "4.9.0",
+  "javaSpecificationVersions": [
+    "17"
   ]
 }
