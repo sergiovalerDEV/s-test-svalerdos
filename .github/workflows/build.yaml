@@ -1,98 +1,88 @@
-# Build and Deploy to Sandbox
-name: Build and Deploy to Sandbox
+name: Build and Deploy to Sandbox  
+on:   
+  push:     
+    branches: [ master ]   
+  pull_request:     
+    branches: [ master ]      
 
-on:
-  push:
-    branches: [master]
-  pull_request:
-    branches: [master]
+jobs:   
+  build:     
+    runs-on: ubuntu-latest     
+    steps:     
+    - name: Checkout this repo       
+      uses: actions/checkout@v4     
+    - name: Cache dependencies       
+      uses: actions/cache@v4       
+      with:         
+        path: ~/.m2/repository         
+        key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}         
+        restore-keys: |           
+          ${{ runner.os }}-maven-     
+    - name: Set up JDK 1.8       
+      uses: actions/setup-java@v4       
+      with:         
+        distribution: 'zulu'         
+        java-version: 8
+    # Configure Maven settings
+    - name: Configure Maven settings with Anypoint credentials
+      run: |
+        mkdir -p ~/.m2
+        echo "<settings>
+          <servers>
+            <server>
+              <id>anypoint-exchange-v3</id>
+              <username>${{ secrets.ANYPOINT_PLATFORM_USERNAME }}</username>
+              <password>${{ secrets.ANYPOINT_PLATFORM_PASSWORD }}</password>
+            </server>
+          </servers>
+        </settings>" > ~/.m2/settings.xml
+    - name: Build with Maven  
+      run: mvn -B -X clean package --file pom.xml
+    - name: Upload artifact        
+      uses: actions/upload-artifact@v4       
+      with:           
+        name: artifacts           
+        path: target/*.jar            
 
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-
-      - name: Cache Maven Dependencies
-        uses: actions/cache@v4
-        with:
-          path: ~/.m2/repository
-          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
-          restore-keys: |
-            ${{ runner.os }}-maven-
-
-      - name: Set up JDK 1.8
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'zulu'
-          java-version: 8
-
-      - name: Configure Maven Settings
-        run: |
-          mkdir -p ~/.m2
-          echo "<settings>
-            <servers>
-              <server>
-                <id>anypoint-exchange-v3</id>
-                <username>${{ secrets.ANYPOINT_PLATFORM_USERNAME }}</username>
-                <password>${{ secrets.ANYPOINT_PLATFORM_PASSWORD }}</password>
-              </server>
-            </servers>
-          </settings>" > ~/.m2/settings.xml
-
-      - name: Build with Maven
-        run: mvn -B -U clean package --file pom.xml
-
-      - name: Upload Build Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: artifacts
-          path: target/*.jar
-
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-
-      - name: Set up JDK 1.8
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'zulu'
-          java-version: 8
-
-      - name: Cache Maven Dependencies
-        uses: actions/cache@v4
-        with:
-          path: ~/.m2/repository
-          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
-          restore-keys: |
-            ${{ runner.os }}-maven-
-
-      - name: Download Build Artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: artifacts
-          path: target/
-
-      - name: Configure Maven Settings
-        run: |
-          mkdir -p ~/.m2
-          echo "<settings>
-            <servers>
-              <server>
-                <id>anypoint-exchange-v3</id>
-                <username>${{ secrets.ANYPOINT_PLATFORM_USERNAME }}</username>
-                <password>${{ secrets.ANYPOINT_PLATFORM_PASSWORD }}</password>
-              </server>
-            </servers>
-          </settings>" > ~/.m2/settings.xml
-
-      - name: Deploy to Sandbox
-        run: |
-          mvn -U deploy -DmuleDeploy -DskipDeploymentVerification=true \
-          -Danypoint.username="${{ secrets.ANYPOINT_PLATFORM_USERNAME }}" \
-          -Danypoint.password="${{ secrets.ANYPOINT_PLATFORM_PASSWORD }}" \
-          -Dencryption.key="${{ secrets.ENCRYPTION_KEY }}"
+  deploy:     
+    needs: build     
+    runs-on: ubuntu-latest     
+    steps:         
+    - name: Checkout this repo       
+      uses: actions/checkout@v4     
+    - name: Set up JDK 1.8       
+      uses: actions/setup-java@v4       
+      with:         
+        distribution: 'zulu'         
+        java-version: 8
+    - name: Cache dependencies       
+      uses: actions/cache@v4       
+      with:         
+        path: ~/.m2/repository         
+        key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}         
+        restore-keys: |           
+          ${{ runner.os }}-maven-     
+    - name: Download artifacts
+      uses: actions/download-artifact@v4       
+      with:         
+        name: artifacts
+        path: target/
+    - name: Configure Maven settings with Anypoint credentials
+      run: |
+        mkdir -p ~/.m2
+        echo "<settings>
+          <servers>
+            <server>
+              <id>anypoint-exchange-v3</id>
+              <username>${{ secrets.ANYPOINT_PLATFORM_USERNAME }}</username>
+              <password>${{ secrets.ANYPOINT_PLATFORM_PASSWORD }}</password>
+            </server>
+          </servers>
+        </settings>" > ~/.m2/settings.xml
+    - name: Deploy to Sandbox
+      run: |
+        mvn deploy -DmuleDeploy -DskipDeploymentVerification=true \
+        -Danypoint.username="${{ secrets.ANYPOINT_PLATFORM_USERNAME }}" \
+        -Danypoint.password="${{ secrets.ANYPOINT_PLATFORM_PASSWORD }}" \
+        -Dencryption.key="${{ secrets.ENCRYPTION_KEY }}"
+        
