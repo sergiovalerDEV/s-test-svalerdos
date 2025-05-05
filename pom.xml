@@ -4,7 +4,7 @@
 
 	<groupId>153b0d20-821e-4f82-b36a-7e0e28e44a93</groupId>
 	<artifactId>s-test-svalerdos</artifactId>
-	<version>1.0.6</version>
+	<version>1.0.9</version>
 	<packaging>mule-application</packaging>
 
 	<name>s-test-svalerdos</name>
@@ -13,9 +13,11 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
-		<!-- Usando la versión que funciona en las otras aplicaciones -->
-		<app.runtime>4.9.0</app.runtime>
-		<mule.maven.plugin.version>4.9.0</mule.maven.plugin.version>
+		<!-- Versiones verificadas y disponibles en los repositorios -->
+		<app.runtime>4.4.0</app.runtime>
+		<mule.maven.plugin.version>3.5.2</mule.maven.plugin.version>
+		<maven.compiler.target>1.8</maven.compiler.target>
+		<maven.compiler.source>1.8</maven.compiler.source>
 	</properties>
 
 	<build>
@@ -32,6 +34,13 @@
 				<extensions>true</extensions>
 				<configuration>
 					<classifier>mule-application</classifier>
+					<sharedLibraries>
+						<!-- Añadimos esta sección para asegurar que las bibliotecas compartidas se incluyan -->
+						<sharedLibrary>
+							<groupId>org.apache.commons</groupId>
+							<artifactId>commons-lang3</artifactId>
+						</sharedLibrary>
+					</sharedLibraries>
 					<cloudhub2Deployment>
 						<uri>https://anypoint.mulesoft.com</uri>
 						<provider>MC</provider>
@@ -43,16 +52,14 @@
 						<applicationName>s-test-svalerdos</applicationName>
 						<replicas>1</replicas>
 						<vCores>0.1</vCores>
-						<!-- Añadimos timeout y omitimos verificación -->
-						<deploymentTimeout>300000</deploymentTimeout>
+						<deploymentTimeout>600000</deploymentTimeout>
 						<skipDeploymentVerification>true</skipDeploymentVerification>
 						<deploymentSettings>
 							<enforceDeployingReplicasAcrossNodes>false</enforceDeployingReplicasAcrossNodes>
-							<updateStrategy>rolling</updateStrategy>
+							<updateStrategy>recreate</updateStrategy>
 						</deploymentSettings>
 						<properties>
 							<env>dev</env>
-							<!-- Configuración correcta de la clave de encriptación -->
 							<encryption.key>${encryption.key}</encryption.key>
 						</properties>
 					</cloudhub2Deployment>
@@ -62,22 +69,23 @@
 	</build>
 
 	<dependencies>
+		<!-- Dependencias básicas de Mule -->
 		<dependency>
 			<groupId>org.mule.connectors</groupId>
 			<artifactId>mule-http-connector</artifactId>
-			<version>1.10.3</version>
+			<version>1.5.25</version>
 			<classifier>mule-plugin</classifier>
 		</dependency>
 		<dependency>
 			<groupId>org.mule.connectors</groupId>
 			<artifactId>mule-sockets-connector</artifactId>
-			<version>1.2.5</version>
+			<version>1.2.2</version>
 			<classifier>mule-plugin</classifier>
 		</dependency>
 		<dependency>
 			<groupId>org.mule.modules</groupId>
 			<artifactId>mule-apikit-module</artifactId>
-			<version>1.11.3</version>
+			<version>1.5.5</version>
 			<classifier>mule-plugin</classifier>
 		</dependency>
 		<dependency>
@@ -90,14 +98,20 @@
 		<dependency>
 			<groupId>com.mulesoft.connectors</groupId>
 			<artifactId>mule-salesforce-connector</artifactId>
-			<version>10.22.5</version>
+			<version>10.12.1</version>
 			<classifier>mule-plugin</classifier>
 		</dependency>
 		<dependency>
 			<groupId>com.mulesoft.modules</groupId>
 			<artifactId>mule-secure-configuration-property-module</artifactId>
-			<version>1.2.7</version>
+			<version>1.2.3</version>
 			<classifier>mule-plugin</classifier>
+		</dependency>
+		<!-- Añadimos dependencias comunes que pueden ser necesarias -->
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-lang3</artifactId>
+			<version>3.12.0</version>
 		</dependency>
 	</dependencies>
 
@@ -114,6 +128,22 @@
 			<url>https://repository.mulesoft.org/releases/</url>
 			<layout>default</layout>
 		</repository>
+		<repository>
+			<id>central</id>
+			<name>Central Repository</name>
+			<url>https://repo.maven.apache.org/maven2</url>
+			<layout>default</layout>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+		</repository>
+		<!-- Añadimos el repositorio de Exchange Public para más dependencias -->
+		<repository>
+			<id>exchange-public</id>
+			<name>Exchange Public</name>
+			<url>https://maven.anypoint.mulesoft.com/api/v2/maven</url>
+			<layout>default</layout>
+		</repository>
 	</repositories>
 
 	<pluginRepositories>
@@ -122,6 +152,25 @@
 			<name>MuleSoft Releases Repository</name>
 			<layout>default</layout>
 			<url>https://repository.mulesoft.org/releases/</url>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+		</pluginRepository>
+		<pluginRepository>
+			<id>central</id>
+			<name>Central Repository</name>
+			<url>https://repo.maven.apache.org/maven2</url>
+			<layout>default</layout>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+		</pluginRepository>
+		<!-- Añadimos el repositorio de plugins de Exchange Public -->
+		<pluginRepository>
+			<id>exchange-public</id>
+			<name>Exchange Public</name>
+			<url>https://maven.anypoint.mulesoft.com/api/v2/maven</url>
+			<layout>default</layout>
 			<snapshots>
 				<enabled>false</enabled>
 			</snapshots>
