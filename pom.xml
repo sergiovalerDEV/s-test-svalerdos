@@ -19,6 +19,22 @@
 
 	<build>
 		<plugins>
+		<plugin>
+    <groupId>org.mule.tools.maven</groupId>
+    <artifactId>mule-maven-plugin</artifactId>
+    <version>${mule.maven.plugin.version}</version>
+    <extensions>true</extensions>
+    <configuration>
+        <classifier>mule-application</classifier>
+        <deploymentType>cloudhub</deploymentType>
+        <muleVersion>${app.runtime}</muleVersion>
+        <applicationName>${project.artifactId}</applicationName>
+        <environment>Sandbox</environment>
+        <workerType>MICRO</workerType>
+        <region>us-east-1</region>
+        <objectStoreV2>true</objectStoreV2>
+    </configuration>
+</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-clean-plugin</artifactId>
