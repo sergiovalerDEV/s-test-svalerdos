@@ -16,7 +16,7 @@
 		<!-- Versión del runtime de Mule -->
 		<app.runtime>4.4.0</app.runtime>
 		<!-- Versión del plugin de Maven que está disponible -->
-		<mule.maven.plugin.version>3.8.0</mule.maven.plugin.version>
+		<mule.maven.plugin.version>3.9.0</mule.maven.plugin.version>
 	</properties>
 
 	<build>
