@@ -68,7 +68,10 @@ jobs:
         name: artifacts
         path: target/
     - name: Deploy to Sandbox
+      env:
+        KEY: ${{ secrets.ENCRYPTION_KEY }}
       run: |
         mvn deploy -DmuleDeploy \
         -Danypoint.username="${{ secrets.ANYPOINT_PLATFORM_USERNAME }}" \
-        -Danypoint.password="${{ secrets.ANYPOINT_PLATFORM_PASSWORD }}"
+        -Danypoint.password="${{ secrets.ANYPOINT_PLATFORM_PASSWORD }}" \
+        -Dencryption.key="${KEY}"

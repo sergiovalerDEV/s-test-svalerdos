@@ -13,8 +13,8 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
-		<!-- Versión con "e" al final como se sugirió en el foro -->
-		<app.runtime>4.9.3e</app.runtime>
+		<!-- Usando la versión que funciona en tus otras aplicaciones -->
+		<app.runtime>4.9.3:3</app.runtime>
 		<mule.maven.plugin.version>4.4.0</mule.maven.plugin.version>
 	</properties>
 
@@ -36,7 +36,7 @@
 						<uri>https://anypoint.mulesoft.com</uri>
 						<provider>MC</provider>
 						<environment>Sandbox</environment>
-						<target>Cloudhub-US-East-2</target>
+						<target>Shared Space</target>
 						<muleVersion>${app.runtime}</muleVersion>
 						<username>${anypoint.username}</username>
 						<password>${anypoint.password}</password>
@@ -49,6 +49,8 @@
 						</deploymentSettings>
 						<properties>
 							<env>dev</env>
+							<!-- Aquí es donde se pasa la clave de encriptación -->
+							<encryption.key>${encryption.key}</encryption.key>
 						</properties>
 					</cloudhub2Deployment>
 				</configuration>
