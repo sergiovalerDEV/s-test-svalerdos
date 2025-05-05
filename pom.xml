@@ -4,7 +4,7 @@
 
 	<groupId>153b0d20-821e-4f82-b36a-7e0e28e44a93</groupId>
 	<artifactId>s-test-svalerdos</artifactId>
-	<version>1.0.9</version>
+	<version>1.0.11</version>
 	<packaging>mule-application</packaging>
 
 	<name>s-test-svalerdos</name>
@@ -13,7 +13,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
-		<!-- Versiones verificadas y disponibles en los repositorios -->
+		<!-- Versión estable y compatible con CloudHub 2.0 -->
 		<app.runtime>4.4.0</app.runtime>
 		<mule.maven.plugin.version>3.5.2</mule.maven.plugin.version>
 		<maven.compiler.target>1.8</maven.compiler.target>
@@ -34,13 +34,6 @@
 				<extensions>true</extensions>
 				<configuration>
 					<classifier>mule-application</classifier>
-					<sharedLibraries>
-						<!-- Añadimos esta sección para asegurar que las bibliotecas compartidas se incluyan -->
-						<sharedLibrary>
-							<groupId>org.apache.commons</groupId>
-							<artifactId>commons-lang3</artifactId>
-						</sharedLibrary>
-					</sharedLibraries>
 					<cloudhub2Deployment>
 						<uri>https://anypoint.mulesoft.com</uri>
 						<provider>MC</provider>
@@ -69,7 +62,7 @@
 	</build>
 
 	<dependencies>
-		<!-- Dependencias básicas de Mule -->
+		<!-- Versiones compatibles con Mule 4.4.0 -->
 		<dependency>
 			<groupId>org.mule.connectors</groupId>
 			<artifactId>mule-http-connector</artifactId>
@@ -107,12 +100,6 @@
 			<version>1.2.3</version>
 			<classifier>mule-plugin</classifier>
 		</dependency>
-		<!-- Añadimos dependencias comunes que pueden ser necesarias -->
-		<dependency>
-			<groupId>org.apache.commons</groupId>
-			<artifactId>commons-lang3</artifactId>
-			<version>3.12.0</version>
-		</dependency>
 	</dependencies>
 
 	<repositories>
@@ -133,16 +120,6 @@
 			<name>Central Repository</name>
 			<url>https://repo.maven.apache.org/maven2</url>
 			<layout>default</layout>
-			<snapshots>
-				<enabled>false</enabled>
-			</snapshots>
-		</repository>
-		<!-- Añadimos el repositorio de Exchange Public para más dependencias -->
-		<repository>
-			<id>exchange-public</id>
-			<name>Exchange Public</name>
-			<url>https://maven.anypoint.mulesoft.com/api/v2/maven</url>
-			<layout>default</layout>
 		</repository>
 	</repositories>
 
@@ -161,19 +138,6 @@
 			<name>Central Repository</name>
 			<url>https://repo.maven.apache.org/maven2</url>
 			<layout>default</layout>
-			<snapshots>
-				<enabled>false</enabled>
-			</snapshots>
-		</pluginRepository>
-		<!-- Añadimos el repositorio de plugins de Exchange Public -->
-		<pluginRepository>
-			<id>exchange-public</id>
-			<name>Exchange Public</name>
-			<url>https://maven.anypoint.mulesoft.com/api/v2/maven</url>
-			<layout>default</layout>
-			<snapshots>
-				<enabled>false</enabled>
-			</snapshots>
 		</pluginRepository>
 	</pluginRepositories>
 
