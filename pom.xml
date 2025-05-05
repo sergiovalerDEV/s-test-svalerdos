@@ -127,5 +127,6 @@
 			</snapshots>
 		</pluginRepository>
 	</pluginRepositories>
+	<!-- Usando la versión que funciona en las otras aplicaciones -->
 
 </project>
