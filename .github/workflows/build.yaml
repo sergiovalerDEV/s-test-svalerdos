@@ -79,10 +79,12 @@ jobs:
           </servers>
         </settings>" > ~/.m2/settings.xml
     
-    # Método 1: Borrar aplicación con curl y autenticación básica
-    - name: Borrar aplicación existente (método simple)
+    # Borrar la aplicación desplegada en Runtime Manager
+    - name: Borrar aplicación en Runtime Manager
       run: |
-        echo "Intentando borrar la aplicación existente..."
+        echo "Borrando la aplicación desplegada en Runtime Manager..."
+        
+        # Para Cloudhub 2.0 (RTF)
         RESULTADO=$(curl -s -u "${{ secrets.ANYPOINT_PLATFORM_USERNAME }}:${{ secrets.ANYPOINT_PLATFORM_PASSWORD }}" \
           -X DELETE \
           -w "\n%{http_code}" \
@@ -93,28 +95,36 @@ jobs:
         
         # Verificar resultado
         if [ "$HTTP_CODE" == "204" ] || [ "$HTTP_CODE" == "200" ]; then
-          echo "✅ Aplicación borrada correctamente"
+          echo "✅ Aplicación en Runtime Manager borrada correctamente"
           echo "Esperando 20 segundos para asegurar que se complete el borrado..."
           sleep 20
         elif [ "$HTTP_CODE" == "404" ]; then
-          echo "ℹ️ La aplicación no existe o ya fue borrada"
+          echo "ℹ️ No se encontró la aplicación en Runtime Manager o ya fue borrada"
         else
-          echo "⚠️ Error al borrar la aplicación: HTTP $HTTP_CODE"
+          echo "⚠️ Error al borrar la aplicación en Runtime Manager: HTTP $HTTP_CODE"
           echo "Respuesta: $(echo "$RESULTADO" | head -n -1)"
-          echo "Continuando con el despliegue de todos modos..."
+          echo "Intentando borrar con el endpoint alternativo para Cloudhub 1.0..."
+          
+          # Intento alternativo para Cloudhub 1.0
+          RESULTADO2=$(curl -s -u "${{ secrets.ANYPOINT_PLATFORM_USERNAME }}:${{ secrets.ANYPOINT_PLATFORM_PASSWORD }}" \
+            -X DELETE \
+            -w "\n%{http_code}" \
+            "https://anypoint.mulesoft.com/cloudhub/api/applications/s-test-svalerdos")
+          
+          HTTP_CODE2=$(echo "$RESULTADO2" | tail -n1)
+          
+          if [ "$HTTP_CODE2" == "204" ] || [ "$HTTP_CODE2" == "200" ]; then
+            echo "✅ Aplicación en Runtime Manager (Cloudhub 1.0) borrada correctamente"
+            echo "Esperando 20 segundos para asegurar que se complete el borrado..."
+            sleep 20
+          elif [ "$HTTP_CODE2" == "404" ]; then
+            echo "ℹ️ No se encontró la aplicación en Runtime Manager (Cloudhub 1.0)"
+          else
+            echo "⚠️ Error al borrar la aplicación en Runtime Manager (Cloudhub 1.0): HTTP $HTTP_CODE2"
+            echo "Respuesta: $(echo "$RESULTADO2" | head -n -1)"
+            echo "Continuando con el despliegue de todos modos..."
+          fi
         fi
-    
-    # Método 2 (alternativo): Usar el plugin de Maven para borrar
-    # - name: Borrar aplicación con Maven
-    #   continue-on-error: true
-    #   run: |
-    #     echo "Intentando borrar la aplicación existente con Maven..."
-    #     mvn mule:undeploy -Dmule.artifact.name=s-test-svalerdos \
-    #     -Danypoint.username="${{ secrets.ANYPOINT_PLATFORM_USERNAME }}" \
-    #     -Danypoint.password="${{ secrets.ANYPOINT_PLATFORM_PASSWORD }}" \
-    #     -Danypoint.platform.gatekeeper=false \
-    #     -Danypoint.environment=Sandbox \
-    #     -Dcloudhub.application=s-test-svalerdos
     
     # Desplegar nueva aplicación
     - name: Desplegar a Sandbox
