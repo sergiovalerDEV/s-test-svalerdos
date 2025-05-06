@@ -184,3 +184,4 @@ jobs:
           -Danypoint.password="${{ secrets.ANYPOINT_PLATFORM_PASSWORD }}" \
           -Dencryption.key="${{ secrets.ENCRYPTION_KEY }}" \
           -Dcloudhub.environment=Sandbox
+
