@@ -26,6 +26,12 @@ jobs:
           java-version: 8
           cache: 'maven'
       
+      # Configurar credenciales como variables de entorno primero
+      - name: Set environment variables
+        run: |
+          echo "MAVEN_USERNAME=${{ secrets.ANYPOINT_PLATFORM_USERNAME }}" >> $GITHUB_ENV
+          echo "MAVEN_PASSWORD=${{ secrets.ANYPOINT_PLATFORM_PASSWORD }}" >> $GITHUB_ENV
+      
       # Asegurar que tenemos todas las dependencias necesarias para Aether
       - name: Configure Maven settings with extended config
         run: |
@@ -34,8 +40,18 @@ jobs:
             <servers>
               <server>
                 <id>anypoint-exchange-v3</id>
-                <username>\${{ secrets.ANYPOINT_PLATFORM_USERNAME }}</username>
-                <password>\${{ secrets.ANYPOINT_PLATFORM_PASSWORD }}</password>
+                <username>${{ secrets.ANYPOINT_PLATFORM_USERNAME }}</username>
+                <password>${{ secrets.ANYPOINT_PLATFORM_PASSWORD }}</password>
+              </server>
+              <server>
+                <id>Exchange2</id>
+                <username>${{ secrets.ANYPOINT_PLATFORM_USERNAME }}</username>
+                <password>${{ secrets.ANYPOINT_PLATFORM_PASSWORD }}</password>
+              </server>
+              <server>
+                <id>mulesoft-releases</id>
+                <username>${{ secrets.ANYPOINT_PLATFORM_USERNAME }}</username>
+                <password>${{ secrets.ANYPOINT_PLATFORM_PASSWORD }}</password>
               </server>
             </servers>
             <profiles>
@@ -53,6 +69,18 @@ jobs:
                     <snapshots>
                       <enabled>false</enabled>
                     </snapshots>
+                  </repository>
+                  <repository>
+                    <id>anypoint-exchange-v3</id>
+                    <name>Anypoint Exchange V3</name>
+                    <url>https://maven.anypoint.mulesoft.com/api/v3/maven</url>
+                    <layout>default</layout>
+                  </repository>
+                  <repository>
+                    <id>Exchange2</id>
+                    <name>Exchange2 Repository</name>
+                    <url>https://maven.anypoint.mulesoft.com/api/v2/maven</url>
+                    <layout>default</layout>
                   </repository>
                   <repository>
                     <id>mulesoft-releases</id>
@@ -75,6 +103,9 @@ jobs:
                 </repositories>
               </profile>
             </profiles>
+            <activeProfiles>
+              <activeProfile>mule-extra-repos</activeProfile>
+            </activeProfiles>
           </settings>" > ~/.m2/settings.xml
       
       # Añadir dependencias de Aether explícitamente 
@@ -86,7 +117,13 @@ jobs:
           mvn dependency:get -Dartifact=org.apache.maven:maven-aether-provider:3.3.9
       
       - name: Build with Maven
-        run: mvn -B clean package --file pom.xml -Dmaven.wagon.http.ssl.insecure=true -Dmaven.wagon.http.ssl.allowall=true
+        run: |
+          mvn -B clean package --file pom.xml \
+          -Dmaven.wagon.http.ssl.insecure=true \
+          -Dmaven.wagon.http.ssl.allowall=true \
+          -Danypoint.username="${{ secrets.ANYPOINT_PLATFORM_USERNAME }}" \
+          -Danypoint.password="${{ secrets.ANYPOINT_PLATFORM_PASSWORD }}" \
+          --no-transfer-progress
       
       - name: Upload artifact
         uses: actions/upload-artifact@v4
@@ -114,6 +151,12 @@ jobs:
           name: artifacts
           path: target/
       
+      # Configuración de variables de entorno
+      - name: Set environment variables
+        run: |
+          echo "MAVEN_USERNAME=${{ secrets.ANYPOINT_PLATFORM_USERNAME }}" >> $GITHUB_ENV
+          echo "MAVEN_PASSWORD=${{ secrets.ANYPOINT_PLATFORM_PASSWORD }}" >> $GITHUB_ENV
+      
       # Configuración mejorada para Maven
       - name: Configure Maven settings with extended config
         run: |
@@ -122,8 +165,18 @@ jobs:
             <servers>
               <server>
                 <id>anypoint-exchange-v3</id>
-                <username>\${{ secrets.ANYPOINT_PLATFORM_USERNAME }}</username>
-                <password>\${{ secrets.ANYPOINT_PLATFORM_PASSWORD }}</password>
+                <username>${{ secrets.ANYPOINT_PLATFORM_USERNAME }}</username>
+                <password>${{ secrets.ANYPOINT_PLATFORM_PASSWORD }}</password>
+              </server>
+              <server>
+                <id>Exchange2</id>
+                <username>${{ secrets.ANYPOINT_PLATFORM_USERNAME }}</username>
+                <password>${{ secrets.ANYPOINT_PLATFORM_PASSWORD }}</password>
+              </server>
+              <server>
+                <id>mulesoft-releases</id>
+                <username>${{ secrets.ANYPOINT_PLATFORM_USERNAME }}</username>
+                <password>${{ secrets.ANYPOINT_PLATFORM_PASSWORD }}</password>
               </server>
             </servers>
             <profiles>
@@ -143,14 +196,37 @@ jobs:
                     </snapshots>
                   </repository>
                   <repository>
+                    <id>anypoint-exchange-v3</id>
+                    <name>Anypoint Exchange V3</name>
+                    <url>https://maven.anypoint.mulesoft.com/api/v3/maven</url>
+                    <layout>default</layout>
+                  </repository>
+                  <repository>
+                    <id>Exchange2</id>
+                    <name>Exchange2 Repository</name>
+                    <url>https://maven.anypoint.mulesoft.com/api/v2/maven</url>
+                    <layout>default</layout>
+                  </repository>
+                  <repository>
                     <id>mulesoft-releases</id>
                     <name>MuleSoft Releases Repository</name>
                     <url>https://repository.mulesoft.org/releases/</url>
                     <layout>default</layout>
                   </repository>
                 </repositories>
+                <pluginRepositories>
+                  <pluginRepository>
+                    <id>mulesoft-plugins</id>
+                    <name>MuleSoft Plugin Repository</name>
+                    <url>https://repository.mulesoft.org/releases/</url>
+                    <layout>default</layout>
+                  </pluginRepository>
+                </pluginRepositories>
               </profile>
             </profiles>
+            <activeProfiles>
+              <activeProfile>mule-extra-repos</activeProfile>
+            </activeProfiles>
           </settings>" > ~/.m2/settings.xml
       
       # Instalar dependencias necesarias antes del despliegue
@@ -161,6 +237,10 @@ jobs:
           mvn dependency:get -Dartifact=org.eclipse.aether:aether-transport-http:1.1.0
           mvn dependency:get -Dartifact=org.apache.maven:maven-aether-provider:3.3.9
       
+      # Verificar que el JAR existe antes de deployar
+      - name: List artifacts
+        run: ls -la target/
+      
       # Aumentar el tiempo de espera y opciones de despliegue
       - name: Deploy to Sandbox
         run: |
@@ -169,6 +249,7 @@ jobs:
           -DdeploymentTimeout=600000 \
           -Dmaven.wagon.http.ssl.insecure=true \
           -Dmaven.wagon.http.ssl.allowall=true \
-          -Danypoint.username="\${{ secrets.ANYPOINT_PLATFORM_USERNAME }}" \
-          -Danypoint.password="\${{ secrets.ANYPOINT_PLATFORM_PASSWORD }}" \
-          -Dencryption.key="\${{ secrets.ENCRYPTION_KEY }}"
+          -Danypoint.username="${{ secrets.ANYPOINT_PLATFORM_USERNAME }}" \
+          -Danypoint.password="${{ secrets.ANYPOINT_PLATFORM_PASSWORD }}" \
+          -Dencryption.key="${{ secrets.ENCRYPTION_KEY }}" \
+          --no-transfer-progress
