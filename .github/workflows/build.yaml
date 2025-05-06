@@ -179,7 +179,7 @@ jobs:
 
       - name: Clean install and Deploy to Sandbox
         run: |
-          mvn clean install -DmuleDeploy -DskipDeploymentVerification=true \
+          mvn clean install deploy -DmuleDeploy -DskipDeploymentVerification=true \
           -Danypoint.username="${{ secrets.ANYPOINT_PLATFORM_USERNAME }}" \
           -Danypoint.password="${{ secrets.ANYPOINT_PLATFORM_PASSWORD }}" \
           -Dencryption.key="${{ secrets.ENCRYPTION_KEY }}" \
