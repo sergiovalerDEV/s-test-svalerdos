@@ -1,105 +1,98 @@
-name: Build and Deploy to Sandbox  
-on:   
-  push:     
-    branches: [ master ]   
-  pull_request:     
-    branches: [ master ]      
+name: Build and Deploy to Sandbox
 
-jobs:   
-  build:     
-    runs-on: ubuntu-latest     
-    steps:     
-    - name: Checkout this repo       
-      uses: actions/checkout@v4     
-    - name: Cache dependencies       
-      uses: actions/cache@v4       
-      with:         
-        path: ~/.m2/repository         
-        key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}         
-        restore-keys: |           
-          ${{ runner.os }}-maven-     
-    - name: Set up JDK 1.8       
-      uses: actions/setup-java@v4       
-      with:         
-        distribution: 'zulu'         
-        java-version: 8  
-    - name: Configure Maven settings
-      run: |
-        mkdir -p ~/.m2
-        echo "<settings>
-          <servers>
-            <server>
-              <id>anypoint-exchange-v3</id>
-              <username>${{ secrets.ANYPOINT_PLATFORM_USERNAME }}</username>
-              <password>${{ secrets.ANYPOINT_PLATFORM_PASSWORD }}</password>
-            </server>
-          </servers>
-        </settings>" > ~/.m2/settings.xml
-    - name: Build with Maven  
-      run: mvn -B clean package --file pom.xml
-    - name: Upload artifact        
-      uses: actions/upload-artifact@v4       
-      with:           
-        name: artifacts           
-        path: target/*.jar            
-
-  deploy:     
-    needs: build     
-    runs-on: ubuntu-latest     
-    steps:         
-    - name: Checkout this repo       
-      uses: actions/checkout@v4     
-    - name: Set up Maven 3.6.3
-      uses: stCarolas/setup-maven@v4.5
-      with:
-        maven-version: 3.6.3
-    - name: Set up JDK 1.8       
-      uses: actions/setup-java@v4       
-      with:         
-        distribution: 'zulu'         
-        java-version: 8
-    - name: Cache dependencies       
-      uses: actions/cache@v4       
-      with:         
-        path: ~/.m2/repository         
-        key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}         
-        restore-keys: |           
-          ${{ runner.os }}-maven-     
-    - name: Download artifacts
-      uses: actions/download-artifact@v4       
-      with:         
-        name: artifacts
-        path: target/
-    - name: Configure Maven settings
-      run: |
-        mkdir -p ~/.m2
-        echo "<settings>
-          <servers>
-            <server>
-              <id>anypoint-exchange-v3</id>
-              <username>${{ secrets.ANYPOINT_PLATFORM_USERNAME }}</username>
-              <password>${{ secrets.ANYPOINT_PLATFORM_PASSWORD }}</password>
-            </server>
-          </servers>
-        </settings>" > ~/.m2/settings.xml
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
     
-    # Desplegar con parámetros avanzados para evitar errores de versión
-    - name: Desplegar a Sandbox con parámetros avanzados
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout this repo
+      uses: actions/checkout@v3
+    - name: Cache dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.m2/repository
+        key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+        restore-keys: |
+          ${{ runner.os }}-maven-
+    - name: Set up JDK 1.8
+      uses: actions/setup-java@v3
+      with:
+        distribution: 'zulu'
+        java-version: 8
+    - name: Test with Maven
+      env:
+        nexus_username: ${{ secrets.nexus_username }}
+        nexus_password: ${{ secrets.nexus_password }}
+        KEY: ${{ secrets.decryption_key }}
+      run: mvn test --settings .maven/settings.xml -Dsecure.key="$KEY"
+    - name: Upload MUnit reports
+      uses: actions/upload-artifact@v3
+      with:
+        name: munit-test-reports
+        path: target/site/munit/coverage/
+
+  build:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout this repo
+      uses: actions/checkout@v3
+    - name: Cache dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.m2/repository
+        key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+        restore-keys: |
+          ${{ runner.os }}-maven-
+    - name: Set up JDK 1.8
+      uses: actions/setup-java@v3
+      with:
+        distribution: 'zulu'
+        java-version: 8
+    - name: Build with Maven
+      run: mvn -B package --file pom.xml -DskipMunitTests
+    - name: Stamp artifact file name with commit hash
       run: |
-        echo "Desplegando aplicación con parámetros avanzados..."
-        mvn deploy -DmuleDeploy \
-        -DskipDeploymentVerification=true \
-        -DskipMuleVersionCompatibilityCheck=true \
-        -DignoreVersionConflict=true \
-        -DforceStopApplicationOnRedeploy=true \
-        -DforceUpdatePomFile=true \
-        -DskipValidation=true \
-        -Dmule.artifact.deploy.muleVersion=4.9.0 \
-        -Danypoint.platform.client_id="${{ secrets.ANYPOINT_PLATFORM_USERNAME }}" \
-        -Danypoint.platform.client_secret="${{ secrets.ANYPOINT_PLATFORM_PASSWORD }}" \
-        -Danypoint.username="${{ secrets.ANYPOINT_PLATFORM_USERNAME }}" \
-        -Danypoint.password="${{ secrets.ANYPOINT_PLATFORM_PASSWORD }}" \
-        -Dencryption.key="${{ secrets.ENCRYPTION_KEY }}" \
-        -Danypoint.platform.base_uri=https://anypoint.mulesoft.com \
-        -Danypoint.platform.analytics_base_uri=https://analytics-ingest.anypoint.mulesoft.com \
-        -Danypoint.platform.gatekeeper=false
+        artifactName1=$(ls target/*.jar | head -1)
+        commitHash=$(git rev-parse --short "$GITHUB_SHA")
+        artifactName2=$(ls target/*.jar | head -1 | sed "s/.jar/-$commitHash.jar/g")
+        mv $artifactName1 $artifactName2
+    - name: Upload artifact 
+      uses: actions/upload-artifact@v3
+      with:
+          name: artifacts
+          path: target/*.jar
+        
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:    
+    - name: Checkout this repo
+      uses: actions/checkout@v3
+    - name: Cache dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.m2/repository
+        key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+        restore-keys: |
+          ${{ runner.os }}-maven-
+    - uses: actions/download-artifact@v3
+      with:
+        name: artifacts
+    - name: Deploy to Sandbox
+      env:
+        USERNAME: ${{ secrets.anypoint_platform_username }}
+        PASSWORD: ${{ secrets.anypoint_platform_password }}
+        KEY: ${{ secrets.decryption_key }}
+      run: |
+        artifactName=$(ls *.jar | head -1)
+        mvn deploy -DskipMunitTests -DmuleDeploy \
+         -Dmule.artifact=$artifactName \
+         -Danypoint.username="$USERNAME" \
+         -Danypoint.password="$PASSWORD" \
+         -Ddecryption.key="$KEY"
