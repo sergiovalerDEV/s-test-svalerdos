@@ -15,7 +15,7 @@
 
 		<!-- Usando la versión que funciona en las otras aplicaciones -->
 		<app.runtime>4.9.3:3</app.runtime> <!-- Cambié a la versión LTS -->
-		<mule.maven.plugin.version>4.9.3:3</mule.maven.plugin.version> <!-- Cambié a la versión compatible con 4.9.x -->
+		<mule.maven.plugin.version>4.4.0</mule.maven.plugin.version> <!-- Cambié a la versión compatible con 4.9.x -->
 	</properties>
 
 	<build>
