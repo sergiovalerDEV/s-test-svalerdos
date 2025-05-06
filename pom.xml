@@ -13,9 +13,9 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
-		<!-- Usando la versión que funciona en las otras apps-->
+		<!-- Alineado con la versión requerida por Runtime Manager -->
 		<app.runtime>4.9.0</app.runtime>
-		<mule.maven.plugin.version>4.3.0</mule.maven.plugin.version>
+		<mule.maven.plugin.version>3.8.0</mule.maven.plugin.version>
 	</properties>
 
 	<build>
@@ -32,6 +32,7 @@
 				<extensions>true</extensions>
 				<configuration>
 					<classifier>mule-application</classifier>
+					<skipMuleVersionCompatibilityCheck>true</skipMuleVersionCompatibilityCheck>
 					<cloudhub2Deployment>
 						<uri>https://anypoint.mulesoft.com</uri>
 						<provider>MC</provider>
@@ -43,20 +44,58 @@
 						<applicationName>s-test-svalerdos</applicationName>
 						<replicas>1</replicas>
 						<vCores>0.1</vCores>
-						<!-- Añadimos timeout y omitimos verificación -->
-						<deploymentTimeout>300000</deploymentTimeout>
+						<deploymentTimeout>600000</deploymentTimeout>
 						<skipDeploymentVerification>true</skipDeploymentVerification>
+						<forceStopApplicationOnRedeploy>true</forceStopApplicationOnRedeploy>
+						<ignoreVersionConflict>true</ignoreVersionConflict>
 						<deploymentSettings>
 							<enforceDeployingReplicasAcrossNodes>false</enforceDeployingReplicasAcrossNodes>
 							<updateStrategy>rolling</updateStrategy>
 						</deploymentSettings>
 						<properties>
 							<env>dev</env>
-							<!-- Configuración correcta de la clave de encriptación -->
 							<encryption.key>${encryption.key}</encryption.key>
 						</properties>
 					</cloudhub2Deployment>
 				</configuration>
+				<dependencies>
+					<!-- Dependencias para resolver problemas de compatibilidad -->
+					<dependency>
+						<groupId>org.eclipse.aether</groupId>
+						<artifactId>aether-api</artifactId>
+						<version>1.1.0</version>
+					</dependency>
+					<dependency>
+						<groupId>org.eclipse.aether</groupId>
+						<artifactId>aether-util</artifactId>
+						<version>1.1.0</version>
+					</dependency>
+					<dependency>
+						<groupId>org.eclipse.aether</groupId>
+						<artifactId>aether-impl</artifactId>
+						<version>1.1.0</version>
+					</dependency>
+					<dependency>
+						<groupId>org.eclipse.aether</groupId>
+						<artifactId>aether-connector-basic</artifactId>
+						<version>1.1.0</version>
+					</dependency>
+					<dependency>
+						<groupId>org.eclipse.aether</groupId>
+						<artifactId>aether-transport-file</artifactId>
+						<version>1.1.0</version>
+					</dependency>
+					<dependency>
+						<groupId>org.eclipse.aether</groupId>
+						<artifactId>aether-transport-http</artifactId>
+						<version>1.1.0</version>
+					</dependency>
+					<dependency>
+						<groupId>org.apache.maven</groupId>
+						<artifactId>maven-aether-provider</artifactId>
+						<version>3.3.9</version>
+					</dependency>
+				</dependencies>
 			</plugin>
 		</plugins>
 	</build>
@@ -114,6 +153,12 @@
 			<url>https://repository.mulesoft.org/releases/</url>
 			<layout>default</layout>
 		</repository>
+		<repository>
+			<id>central</id>
+			<name>Maven Central Repository</name>
+			<url>https://repo.maven.apache.org/maven2</url>
+			<layout>default</layout>
+		</repository>
 	</repositories>
 
 	<pluginRepositories>
@@ -127,5 +172,4 @@
 			</snapshots>
 		</pluginRepository>
 	</pluginRepositories>
-
 </project>

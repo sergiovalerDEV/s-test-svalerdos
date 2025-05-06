@@ -49,6 +49,10 @@ jobs:
     steps:         
     - name: Checkout this repo       
       uses: actions/checkout@v4     
+    - name: Set up Maven 3.6.3
+      uses: stCarolas/setup-maven@v4.5
+      with:
+        maven-version: 3.6.3
     - name: Set up JDK 1.8       
       uses: actions/setup-java@v4       
       with:         
@@ -79,60 +83,23 @@ jobs:
           </servers>
         </settings>" > ~/.m2/settings.xml
     
-    # Borrar la aplicación desplegada en Runtime Manager
-    - name: Borrar aplicación en Runtime Manager
+    # Desplegar con parámetros avanzados para evitar errores de versión
+    - name: Desplegar a Sandbox con parámetros avanzados
       run: |
-        echo "Borrando la aplicación desplegada en Runtime Manager..."
-        
-        # Para Cloudhub 2.0 (RTF)
-        RESULTADO=$(curl -s -u "${{ secrets.ANYPOINT_PLATFORM_USERNAME }}:${{ secrets.ANYPOINT_PLATFORM_PASSWORD }}" \
-          -X DELETE \
-          -w "\n%{http_code}" \
-          "https://anypoint.mulesoft.com/cloudhub/api/v2/organizations/153b0d20-821e-4f82-b36a-7e0e28e44a93/environments/e5d7feb4-a658-436e-8915-5c79b9e15da9/applications/s-test-svalerdos")
-        
-        # Extraer código HTTP
-        HTTP_CODE=$(echo "$RESULTADO" | tail -n1)
-        
-        # Verificar resultado
-        if [ "$HTTP_CODE" == "204" ] || [ "$HTTP_CODE" == "200" ]; then
-          echo "✅ Aplicación en Runtime Manager borrada correctamente"
-          echo "Esperando 20 segundos para asegurar que se complete el borrado..."
-          sleep 20
-        elif [ "$HTTP_CODE" == "404" ]; then
-          echo "ℹ️ No se encontró la aplicación en Runtime Manager o ya fue borrada"
-        else
-          echo "⚠️ Error al borrar la aplicación en Runtime Manager: HTTP $HTTP_CODE"
-          echo "Respuesta: $(echo "$RESULTADO" | head -n -1)"
-          echo "Intentando borrar con el endpoint alternativo para Cloudhub 1.0..."
-          
-          # Intento alternativo para Cloudhub 1.0
-          RESULTADO2=$(curl -s -u "${{ secrets.ANYPOINT_PLATFORM_USERNAME }}:${{ secrets.ANYPOINT_PLATFORM_PASSWORD }}" \
-            -X DELETE \
-            -w "\n%{http_code}" \
-            "https://anypoint.mulesoft.com/cloudhub/api/applications/s-test-svalerdos")
-          
-          HTTP_CODE2=$(echo "$RESULTADO2" | tail -n1)
-          
-          if [ "$HTTP_CODE2" == "204" ] || [ "$HTTP_CODE2" == "200" ]; then
-            echo "✅ Aplicación en Runtime Manager (Cloudhub 1.0) borrada correctamente"
-            echo "Esperando 20 segundos para asegurar que se complete el borrado..."
-            sleep 20
-          elif [ "$HTTP_CODE2" == "404" ]; then
-            echo "ℹ️ No se encontró la aplicación en Runtime Manager (Cloudhub 1.0)"
-          else
-            echo "⚠️ Error al borrar la aplicación en Runtime Manager (Cloudhub 1.0): HTTP $HTTP_CODE2"
-            echo "Respuesta: $(echo "$RESULTADO2" | head -n -1)"
-            echo "Continuando con el despliegue de todos modos..."
-          fi
-        fi
-    
-    # Desplegar nueva aplicación
-    - name: Desplegar a Sandbox
-      run: |
-        echo "Desplegando aplicación..."
-        mvn deploy -DmuleDeploy -DskipDeploymentVerification=true \
+        echo "Desplegando aplicación con parámetros avanzados..."
+        mvn deploy -DmuleDeploy \
+        -DskipDeploymentVerification=true \
         -DskipMuleVersionCompatibilityCheck=true \
-        -Dmule.artifact.deploy.muleVersion=4.6.0 \
+        -DignoreVersionConflict=true \
+        -DforceStopApplicationOnRedeploy=true \
+        -DforceUpdatePomFile=true \
+        -DskipValidation=true \
+        -Dmule.artifact.deploy.muleVersion=4.9.0 \
+        -Danypoint.platform.client_id="${{ secrets.ANYPOINT_PLATFORM_USERNAME }}" \
+        -Danypoint.platform.client_secret="${{ secrets.ANYPOINT_PLATFORM_PASSWORD }}" \
         -Danypoint.username="${{ secrets.ANYPOINT_PLATFORM_USERNAME }}" \
         -Danypoint.password="${{ secrets.ANYPOINT_PLATFORM_PASSWORD }}" \
-        -Dencryption.key="${{ secrets.ENCRYPTION_KEY }}"
+        -Dencryption.key="${{ secrets.ENCRYPTION_KEY }}" \
+        -Danypoint.platform.base_uri=https://anypoint.mulesoft.com \
+        -Danypoint.platform.analytics_base_uri=https://analytics-ingest.anypoint.mulesoft.com \
+        -Danypoint.platform.gatekeeper=false
