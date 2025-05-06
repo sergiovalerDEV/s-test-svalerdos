@@ -177,9 +177,10 @@ jobs:
             </servers>
           </settings>" > ~/.m2/settings.xml
 
-      - name: Deploy to Sandbox
+      - name: Clean install and Deploy to Sandbox
         run: |
-          mvn deploy -DmuleDeploy -DskipDeploymentVerification=true \
+          mvn clean install -DmuleDeploy -DskipDeploymentVerification=true \
           -Danypoint.username="${{ secrets.ANYPOINT_PLATFORM_USERNAME }}" \
           -Danypoint.password="${{ secrets.ANYPOINT_PLATFORM_PASSWORD }}" \
-          -Dencryption.key="${{ secrets.ENCRYPTION_KEY }}"
+          -Dencryption.key="${{ secrets.ENCRYPTION_KEY }}" \
+          -Dcloudhub.environment=Sandbox
