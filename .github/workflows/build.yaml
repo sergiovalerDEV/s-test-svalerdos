@@ -181,7 +181,7 @@ jobs:
         run: |
           mvn deploy -DmuleDeploy -DskipDeploymentVerification=true \
           -DskipMuleVersionCompatibilityCheck=true \
-          -Dapp.runtime=4.9.0 \
+          -Dapp.runtime=4.9.3 \
           -Danypoint.username="${{ secrets.ANYPOINT_PLATFORM_USERNAME }}" \
           -Danypoint.password="${{ secrets.ANYPOINT_PLATFORM_PASSWORD }}" \
           -Dencryption.key="${{ secrets.ENCRYPTION_KEY }}"
