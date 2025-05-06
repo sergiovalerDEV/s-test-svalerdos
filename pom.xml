@@ -42,7 +42,7 @@
             <username>${anypoint.username}</username>
             <password>${anypoint.password}</password>
             <applicationName>s-test-svalerdos</applicationName>
-            <overwriteDeployment>true</overwriteDeployment>
+            <!-- <overwriteDeployment>true</overwriteDeployment> -->
             <replicas>1</replicas>
             <vCores>0.1</vCores>
             <deploymentTimeout>300000</deploymentTimeout>
