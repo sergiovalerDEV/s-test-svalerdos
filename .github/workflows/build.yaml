@@ -3,22 +3,14 @@ on:
   push:     
     branches: [ master ]   
   pull_request:     
-    branches: [ master ]
-  workflow_dispatch:      
+    branches: [ master ]      
 
 jobs:   
-  build-and-deploy:     
+  build:     
     runs-on: ubuntu-latest     
     steps:     
     - name: Checkout this repo       
       uses: actions/checkout@v4     
-    
-    - name: Set up JDK 17       
-      uses: actions/setup-java@v4       
-      with:         
-        distribution: 'temurin'         
-        java-version: 17
-    
     - name: Cache dependencies       
       uses: actions/cache@v4       
       with:         
@@ -26,11 +18,11 @@ jobs:
         key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}         
         restore-keys: |           
           ${{ runner.os }}-maven-     
-    
-    # Instalar jq para procesar JSON
-    - name: Install jq
-      run: sudo apt-get install -y jq
-    
+    - name: Set up JDK 1.8       
+      uses: actions/setup-java@v4       
+      with:         
+        distribution: 'zulu'         
+        java-version: 8
     # Configure Maven settings
     - name: Configure Maven settings with Anypoint credentials
       run: |
@@ -42,85 +34,55 @@ jobs:
               <username>${{ secrets.ANYPOINT_PLATFORM_USERNAME }}</username>
               <password>${{ secrets.ANYPOINT_PLATFORM_PASSWORD }}</password>
             </server>
+          </servers>
+        </settings>" > ~/.m2/settings.xml
+    - name: Build with Maven  
+      run: mvn -B -X clean package --file pom.xml
+    - name: Upload artifact        
+      uses: actions/upload-artifact@v4       
+      with:           
+        name: artifacts           
+        path: target/*.jar            
+
+  deploy:     
+    needs: build     
+    runs-on: ubuntu-latest     
+    steps:         
+    - name: Checkout this repo       
+      uses: actions/checkout@v4     
+    - name: Set up JDK 1.8       
+      uses: actions/setup-java@v4       
+      with:         
+        distribution: 'zulu'         
+        java-version: 8
+    - name: Cache dependencies       
+      uses: actions/cache@v4       
+      with:         
+        path: ~/.m2/repository         
+        key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}         
+        restore-keys: |           
+          ${{ runner.os }}-maven-     
+    - name: Download artifacts
+      uses: actions/download-artifact@v4       
+      with:         
+        name: artifacts
+        path: target/
+    - name: Configure Maven settings with Anypoint credentials
+      run: |
+        mkdir -p ~/.m2
+        echo "<settings>
+          <servers>
             <server>
-              <id>mulesoft-releases</id>
+              <id>anypoint-exchange-v3</id>
               <username>${{ secrets.ANYPOINT_PLATFORM_USERNAME }}</username>
               <password>${{ secrets.ANYPOINT_PLATFORM_PASSWORD }}</password>
             </server>
-            <server>
-              <id>jitpack</id>
-              <username>anonymous</username>
-              <password>anonymous</password>
-            </server>
           </servers>
-          <profiles>
-            <profile>
-              <id>mule-extra-repos</id>
-              <activation>
-                <activeByDefault>true</activeByDefault>
-              </activation>
-              <repositories>
-                <repository>
-                  <id>central</id>
-                  <name>Maven Central</name>
-                  <url>https://repo.maven.apache.org/maven2/</url>
-                  <layout>default</layout>
-                </repository>
-                <repository>
-                  <id>mulesoft-releases</id>
-                  <name>MuleSoft Repository</name>
-                  <url>https://repository.mulesoft.org/releases/</url>
-                  <layout>default</layout>
-                </repository>
-                <repository>
-                  <id>anypoint-exchange-v3</id>
-                  <name>Anypoint Exchange V3</name>
-                  <url>https://maven.anypoint.mulesoft.com/api/v3/maven</url>
-                  <layout>default</layout>
-                </repository>
-                <repository>
-                  <id>jitpack</id>
-                  <name>JitPack Repository</name>
-                  <url>https://jitpack.io</url>
-                  <layout>default</layout>
-                </repository>
-              </repositories>
-            </profile>
-          </profiles>
         </settings>" > ~/.m2/settings.xml
-    
-    # Limpiar caché de dependencias problemáticas
-    - name: Clean problematic dependencies
-      run: |
-        rm -rf ~/.m2/repository/com/github/everit-org
-        rm -rf ~/.m2/repository/org/mule/tools/maven
-    
-    # Construir el proyecto
-    - name: Build with Maven  
-      run: mvn -B clean package -DskipTests
-    
-    # Eliminar la aplicación existente antes de redesplegarla
-    - name: Delete existing application
-      run: |
-        TOKEN=$(curl -X POST 'https://anypoint.mulesoft.com/accounts/api/v2/oauth2/token' \
-        -H 'Content-Type: application/json' \
-        -d '{
-          "username": "${{ secrets.ANYPOINT_PLATFORM_USERNAME }}",
-          "password": "${{ secrets.ANYPOINT_PLATFORM_PASSWORD }}"
-        }' | jq -r '.access_token')
-        
-        # Intentar eliminar la aplicación en US-East-2 (región original)
-        curl -X DELETE "https://anypoint.mulesoft.com/cloudhub/api/v2/organizations/153b0d20-821e-4f82-b36a-7e0e28e44a93/environments/e5d7feb4-a658-436e-8915-5c79b9e15da9/applications/s-test-svalerdos" \
-        -H "Authorization: Bearer $TOKEN" || echo "Application does not exist in US-East-2 or could not be deleted"
-        
-        # Intentar eliminar la aplicación en US-West-2 (nueva región)
-        curl -X DELETE "https://anypoint.mulesoft.com/cloudhub/api/v2/organizations/153b0d20-821e-4f82-b36a-7e0e28e44a93/environments/e5d7feb4-a658-436e-8915-5c79b9e15da9/applications/s-test-svalerdos?target=Cloudhub-US-West-2" \
-        -H "Authorization: Bearer $TOKEN" || echo "Application does not exist in US-West-2 or could not be deleted"
-    
-    # Desplegar la aplicación
     - name: Deploy to Sandbox
       run: |
-        mvn deploy -DmuleDeploy -Dcloudhub2 -DskipTests -DskipDeploymentVerification=true \
+        mvn deploy -DmuleDeploy -DskipDeploymentVerification=true \
         -Danypoint.username="${{ secrets.ANYPOINT_PLATFORM_USERNAME }}" \
         -Danypoint.password="${{ secrets.ANYPOINT_PLATFORM_PASSWORD }}" \
         -Dencryption.key="${{ secrets.ENCRYPTION_KEY }}"
+        
