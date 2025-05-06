@@ -31,6 +31,7 @@
 				<version>${mule.maven.plugin.version}</version>
 				<extensions>true</extensions>
 				<configuration>
+					<skipMuleVersionCompatibilityCheck>true</skipMuleVersionCompatibilityCheck>
 					<classifier>mule-application</classifier>
 					<cloudhub2Deployment>
 						<uri>https://anypoint.mulesoft.com</uri>
@@ -46,7 +47,6 @@
 						<!-- Añadimos timeout y omitimos verificación -->
 						<deploymentTimeout>300000</deploymentTimeout>
 						<skipDeploymentVerification>true</skipDeploymentVerification>
-						<skipMuleVersionCompatibilityCheck>true</skipMuleVersionCompatibilityCheck>
 						<deploymentSettings>
 							<enforceDeployingReplicasAcrossNodes>false</enforceDeployingReplicasAcrossNodes>
 							<updateStrategy>rolling</updateStrategy>
