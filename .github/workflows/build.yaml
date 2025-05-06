@@ -81,10 +81,8 @@ jobs:
         </settings>" > ~/.m2/settings.xml
     - name: Deploy to Sandbox
       run: |
-          mvn deploy -DmuleDeploy \
-          -DskipTests \
-          -DskipDeploymentVerification=true \
+          mvn deploy -DmuleDeploy -DskipDeploymentVerification=true \
           -DskipMuleVersionCompatibilityCheck=true \
           -Danypoint.username="${{ secrets.ANYPOINT_PLATFORM_USERNAME }}" \
           -Danypoint.password="${{ secrets.ANYPOINT_PLATFORM_PASSWORD }}" \
-          -Ddecryption.key="${{ secrets.DECRYPTION_KEY }}"
+          -Dencryption.key="${{ secrets.ENCRYPTION_KEY }}"
