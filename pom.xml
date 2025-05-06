@@ -32,6 +32,44 @@
 				<artifactId>mule-maven-plugin</artifactId>
 				<version>${mule.maven.plugin.version}</version>
 				<extensions>true</extensions>
+				<dependencies>
+					<!-- Dependencias de Eclipse Aether para resolver el error -->
+					<dependency>
+						<groupId>org.eclipse.aether</groupId>
+						<artifactId>aether-api</artifactId>
+						<version>1.1.0</version>
+					</dependency>
+					<dependency>
+						<groupId>org.eclipse.aether</groupId>
+						<artifactId>aether-util</artifactId>
+						<version>1.1.0</version>
+					</dependency>
+					<dependency>
+						<groupId>org.eclipse.aether</groupId>
+						<artifactId>aether-impl</artifactId>
+						<version>1.1.0</version>
+					</dependency>
+					<dependency>
+						<groupId>org.eclipse.aether</groupId>
+						<artifactId>aether-connector-basic</artifactId>
+						<version>1.1.0</version>
+					</dependency>
+					<dependency>
+						<groupId>org.eclipse.aether</groupId>
+						<artifactId>aether-transport-file</artifactId>
+						<version>1.1.0</version>
+					</dependency>
+					<dependency>
+						<groupId>org.eclipse.aether</groupId>
+						<artifactId>aether-transport-http</artifactId>
+						<version>1.1.0</version>
+					</dependency>
+					<dependency>
+						<groupId>org.apache.maven</groupId>
+						<artifactId>maven-aether-provider</artifactId>
+						<version>3.3.9</version>
+					</dependency>
+				</dependencies>
 				<configuration>
 					<cloudHubDeployment>
 						<uri>https://anypoint.mulesoft.com</uri>
@@ -147,6 +185,12 @@
 			<id>mulesoft-releases</id>
 			<name>MuleSoft Releases Repository</name>
 			<url>https://repository.mulesoft.org/releases/</url>
+			<layout>default</layout>
+		</repository>
+		<repository>
+			<id>central</id>
+			<name>Maven Central Repository</name>
+			<url>https://repo.maven.apache.org/maven2</url>
 			<layout>default</layout>
 		</repository>
 	</repositories>
