@@ -14,7 +14,7 @@
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
 		<app.runtime>4.4.0</app.runtime>
-		<mule.maven.plugin.version>3.8.0</mule.maven.plugin.version>
+		<mule.maven.plugin.version>3.5.0</mule.maven.plugin.version>
 		<app.name>amartinez17-github-actions</app.name>
 		<env>Sandbox</env>
 		<munit.version>2.3.13</munit.version>
@@ -32,44 +32,6 @@
 				<artifactId>mule-maven-plugin</artifactId>
 				<version>${mule.maven.plugin.version}</version>
 				<extensions>true</extensions>
-				<dependencies>
-					<!-- Dependencias de Eclipse Aether para resolver el error -->
-					<dependency>
-						<groupId>org.eclipse.aether</groupId>
-						<artifactId>aether-api</artifactId>
-						<version>1.1.0</version>
-					</dependency>
-					<dependency>
-						<groupId>org.eclipse.aether</groupId>
-						<artifactId>aether-util</artifactId>
-						<version>1.1.0</version>
-					</dependency>
-					<dependency>
-						<groupId>org.eclipse.aether</groupId>
-						<artifactId>aether-impl</artifactId>
-						<version>1.1.0</version>
-					</dependency>
-					<dependency>
-						<groupId>org.eclipse.aether</groupId>
-						<artifactId>aether-connector-basic</artifactId>
-						<version>1.1.0</version>
-					</dependency>
-					<dependency>
-						<groupId>org.eclipse.aether</groupId>
-						<artifactId>aether-transport-file</artifactId>
-						<version>1.1.0</version>
-					</dependency>
-					<dependency>
-						<groupId>org.eclipse.aether</groupId>
-						<artifactId>aether-transport-http</artifactId>
-						<version>1.1.0</version>
-					</dependency>
-					<dependency>
-						<groupId>org.apache.maven</groupId>
-						<artifactId>maven-aether-provider</artifactId>
-						<version>3.3.9</version>
-					</dependency>
-				</dependencies>
 				<configuration>
 					<cloudHubDeployment>
 						<uri>https://anypoint.mulesoft.com</uri>
