@@ -83,7 +83,7 @@ jobs:
       run: |
           mvn deploy -DmuleDeploy -DskipDeploymentVerification=true \
           -DskipMuleVersionCompatibilityCheck=true \
-          -Dapp.runtime=4.4.0 \
+          -Dmule.artifact.deploy.muleVersion=4.9.0 \
           -Danypoint.username="${{ secrets.ANYPOINT_PLATFORM_USERNAME }}" \
           -Danypoint.password="${{ secrets.ANYPOINT_PLATFORM_PASSWORD }}" \
           -Dencryption.key="${{ secrets.ENCRYPTION_KEY }}"
