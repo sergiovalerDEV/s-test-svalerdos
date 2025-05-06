@@ -10,18 +10,14 @@
 	<name>s-test-svalerdos</name>
 
 	<properties>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
-    <!-- Usando la versión que funciona en las otras aplicaciones -->
-    <app.runtime>4.9.0</app.runtime>  <!-- Verifica que esta versión de runtime sea soportada por tu entorno -->
-    
-    <!-- Actualiza el plugin de Maven a la misma versión del runtime de la aplicación -->
-    <mule.maven.plugin.version>4.4.0</mule.maven.plugin.version> <!-- Actualizado para ser coherente con app.runtime -->
+		<!-- Usando la versión que funciona en las otras aplicaciones -->
+		<app.runtime>4.6.0</app.runtime>
+		<mule.maven.plugin.version>3.8.0</mule.maven.plugin.version>
+	</properties>
 
-    <!-- Actualiza la versión de Mule a la misma versión que la del runtime -->
-    <mule.version>4.9.0</mule.version>  <!-- Cambiado para ser coherente con app.runtime -->
-</properties>
 	<build>
 		<plugins>
 			<plugin>
@@ -42,7 +38,7 @@
 						<provider>MC</provider>
 						<environment>Sandbox</environment>
 						<target>Cloudhub-US-East-2</target>
-						<muleVersion>4.4.0</muleVersion>
+						<muleVersion>${app.runtime}</muleVersion>
 						<username>${anypoint.username}</username>
 						<password>${anypoint.password}</password>
 						<applicationName>s-test-svalerdos</applicationName>
@@ -114,9 +110,9 @@
   </repository>
   <repository>
     <id>mulesoft-releases</id>
-    <!-- <name>MuleSoft Releases Repository</name> -->
+    <name>MuleSoft Releases Repository</name>
     <url>https://repository.mulesoft.org/releases/</url>
-    <!-- <layout>default</layout> -->
+    <layout>default</layout>
   </repository>
   <repository>
     <id>central</id>
