@@ -1,255 +1,89 @@
-name: Build and Deploy to Sandbox
+name: Build and Deploy to Sandbox  
+on:   
+  push:     
+    branches: [ master ]   
+  pull_request:     
+    branches: [ master ]      
 
-on:
-  push:
-    branches: [ master ]
-  pull_request:
-    branches: [ master ]
+jobs:   
+  build:     
+    runs-on: ubuntu-latest     
+    steps:     
+    - name: Checkout this repo       
+      uses: actions/checkout@v4     
+    - name: Cache dependencies       
+      uses: actions/cache@v4       
+      with:         
+        path: ~/.m2/repository         
+        key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}         
+        restore-keys: |           
+          ${{ runner.os }}-maven-     
+    - name: Set up JDK 1.8       
+      uses: actions/setup-java@v4       
+      with:         
+        distribution: 'zulu'         
+        java-version: 8
+    # Configure Maven settings
+    - name: Configure Maven settings with Anypoint credentials
+      run: |
+        mkdir -p ~/.m2
+        echo "<settings>
+          <servers>
+            <server>
+              <id>anypoint-exchange-v3</id>
+              <username>${{ secrets.ANYPOINT_PLATFORM_USERNAME }}</username>
+              <password>${{ secrets.ANYPOINT_PLATFORM_PASSWORD }}</password>
+            </server>
+          </servers>
+        </settings>" > ~/.m2/settings.xml
+    - name: Build with Maven  
+      run: mvn -B -X clean package --file pom.xml
+    - name: Upload artifact        
+      uses: actions/upload-artifact@v4       
+      with:           
+        name: artifacts           
+        path: target/*.jar            
 
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout this repo
-        uses: actions/checkout@v4
-      
-      # Limpiar caché completamente para garantizar build limpio
-      - name: Clean Maven cache completely
-        run: |
-          rm -rf ~/.m2/repository
-        continue-on-error: true
-      
-      - name: Set up JDK 1.8
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'zulu'
-          java-version: 8
-          cache: 'maven'
-      
-      # Configurar credenciales como variables de entorno primero
-      - name: Set environment variables
-        run: |
-          echo "MAVEN_USERNAME=${{ secrets.ANYPOINT_PLATFORM_USERNAME }}" >> $GITHUB_ENV
-          echo "MAVEN_PASSWORD=${{ secrets.ANYPOINT_PLATFORM_PASSWORD }}" >> $GITHUB_ENV
-      
-      # Asegurar que tenemos todas las dependencias necesarias para Aether
-      - name: Configure Maven settings with extended config
-        run: |
-          mkdir -p ~/.m2
-          echo "<settings>
-            <servers>
-              <server>
-                <id>anypoint-exchange-v3</id>
-                <username>${{ secrets.ANYPOINT_PLATFORM_USERNAME }}</username>
-                <password>${{ secrets.ANYPOINT_PLATFORM_PASSWORD }}</password>
-              </server>
-              <server>
-                <id>Exchange2</id>
-                <username>${{ secrets.ANYPOINT_PLATFORM_USERNAME }}</username>
-                <password>${{ secrets.ANYPOINT_PLATFORM_PASSWORD }}</password>
-              </server>
-              <server>
-                <id>mulesoft-releases</id>
-                <username>${{ secrets.ANYPOINT_PLATFORM_USERNAME }}</username>
-                <password>${{ secrets.ANYPOINT_PLATFORM_PASSWORD }}</password>
-              </server>
-            </servers>
-            <profiles>
-              <profile>
-                <id>mule-extra-repos</id>
-                <activation>
-                  <activeByDefault>true</activeByDefault>
-                </activation>
-                <repositories>
-                  <repository>
-                    <id>central</id>
-                    <name>Central Repository</name>
-                    <url>https://repo.maven.apache.org/maven2</url>
-                    <layout>default</layout>
-                    <snapshots>
-                      <enabled>false</enabled>
-                    </snapshots>
-                  </repository>
-                  <repository>
-                    <id>anypoint-exchange-v3</id>
-                    <name>Anypoint Exchange V3</name>
-                    <url>https://maven.anypoint.mulesoft.com/api/v3/maven</url>
-                    <layout>default</layout>
-                  </repository>
-                  <repository>
-                    <id>Exchange2</id>
-                    <name>Exchange2 Repository</name>
-                    <url>https://maven.anypoint.mulesoft.com/api/v2/maven</url>
-                    <layout>default</layout>
-                  </repository>
-                  <repository>
-                    <id>mulesoft-releases</id>
-                    <name>MuleSoft Releases Repository</name>
-                    <url>https://repository.mulesoft.org/releases/</url>
-                    <layout>default</layout>
-                  </repository>
-                  <repository>
-                    <id>mulesoft-snapshots</id>
-                    <name>MuleSoft Snapshots Repository</name>
-                    <url>https://repository.mulesoft.org/snapshots/</url>
-                    <layout>default</layout>
-                  </repository>
-                  <repository>
-                    <id>mulesoft-public</id>
-                    <name>MuleSoft Public Repository</name>
-                    <url>https://repository.mulesoft.org/nexus/content/repositories/public/</url>
-                    <layout>default</layout>
-                  </repository>
-                </repositories>
-              </profile>
-            </profiles>
-            <activeProfiles>
-              <activeProfile>mule-extra-repos</activeProfile>
-            </activeProfiles>
-          </settings>" > ~/.m2/settings.xml
-      
-      # Añadir dependencias de Aether explícitamente 
-      - name: Install Aether dependencies
-        run: |
-          mvn dependency:get -Dartifact=org.eclipse.aether:aether-connector-basic:1.1.0
-          mvn dependency:get -Dartifact=org.eclipse.aether:aether-transport-file:1.1.0
-          mvn dependency:get -Dartifact=org.eclipse.aether:aether-transport-http:1.1.0
-          mvn dependency:get -Dartifact=org.apache.maven:maven-aether-provider:3.3.9
-      
-      - name: Build with Maven
-        run: |
-          mvn -B clean package --file pom.xml \
-          -Dmaven.wagon.http.ssl.insecure=true \
-          -Dmaven.wagon.http.ssl.allowall=true \
-          -Danypoint.username="${{ secrets.ANYPOINT_PLATFORM_USERNAME }}" \
-          -Danypoint.password="${{ secrets.ANYPOINT_PLATFORM_PASSWORD }}" \
-          --no-transfer-progress
-      
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: artifacts
-          path: target/*.jar
-
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout this repo
-        uses: actions/checkout@v4
-      
-      - name: Set up JDK 1.8
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'zulu'
-          java-version: 8
-          cache: 'maven'
-      
-      - name: Download artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: artifacts
-          path: target/
-      
-      # Configuración de variables de entorno
-      - name: Set environment variables
-        run: |
-          echo "MAVEN_USERNAME=${{ secrets.ANYPOINT_PLATFORM_USERNAME }}" >> $GITHUB_ENV
-          echo "MAVEN_PASSWORD=${{ secrets.ANYPOINT_PLATFORM_PASSWORD }}" >> $GITHUB_ENV
-      
-      # Configuración mejorada para Maven
-      - name: Configure Maven settings with extended config
-        run: |
-          mkdir -p ~/.m2
-          echo "<settings>
-            <servers>
-              <server>
-                <id>anypoint-exchange-v3</id>
-                <username>${{ secrets.ANYPOINT_PLATFORM_USERNAME }}</username>
-                <password>${{ secrets.ANYPOINT_PLATFORM_PASSWORD }}</password>
-              </server>
-              <server>
-                <id>Exchange2</id>
-                <username>${{ secrets.ANYPOINT_PLATFORM_USERNAME }}</username>
-                <password>${{ secrets.ANYPOINT_PLATFORM_PASSWORD }}</password>
-              </server>
-              <server>
-                <id>mulesoft-releases</id>
-                <username>${{ secrets.ANYPOINT_PLATFORM_USERNAME }}</username>
-                <password>${{ secrets.ANYPOINT_PLATFORM_PASSWORD }}</password>
-              </server>
-            </servers>
-            <profiles>
-              <profile>
-                <id>mule-extra-repos</id>
-                <activation>
-                  <activeByDefault>true</activeByDefault>
-                </activation>
-                <repositories>
-                  <repository>
-                    <id>central</id>
-                    <name>Central Repository</name>
-                    <url>https://repo.maven.apache.org/maven2</url>
-                    <layout>default</layout>
-                    <snapshots>
-                      <enabled>false</enabled>
-                    </snapshots>
-                  </repository>
-                  <repository>
-                    <id>anypoint-exchange-v3</id>
-                    <name>Anypoint Exchange V3</name>
-                    <url>https://maven.anypoint.mulesoft.com/api/v3/maven</url>
-                    <layout>default</layout>
-                  </repository>
-                  <repository>
-                    <id>Exchange2</id>
-                    <name>Exchange2 Repository</name>
-                    <url>https://maven.anypoint.mulesoft.com/api/v2/maven</url>
-                    <layout>default</layout>
-                  </repository>
-                  <repository>
-                    <id>mulesoft-releases</id>
-                    <name>MuleSoft Releases Repository</name>
-                    <url>https://repository.mulesoft.org/releases/</url>
-                    <layout>default</layout>
-                  </repository>
-                </repositories>
-                <pluginRepositories>
-                  <pluginRepository>
-                    <id>mulesoft-plugins</id>
-                    <name>MuleSoft Plugin Repository</name>
-                    <url>https://repository.mulesoft.org/releases/</url>
-                    <layout>default</layout>
-                  </pluginRepository>
-                </pluginRepositories>
-              </profile>
-            </profiles>
-            <activeProfiles>
-              <activeProfile>mule-extra-repos</activeProfile>
-            </activeProfiles>
-          </settings>" > ~/.m2/settings.xml
-      
-      # Instalar dependencias necesarias antes del despliegue
-      - name: Install Aether dependencies
-        run: |
-          mvn dependency:get -Dartifact=org.eclipse.aether:aether-connector-basic:1.1.0
-          mvn dependency:get -Dartifact=org.eclipse.aether:aether-transport-file:1.1.0
-          mvn dependency:get -Dartifact=org.eclipse.aether:aether-transport-http:1.1.0
-          mvn dependency:get -Dartifact=org.apache.maven:maven-aether-provider:3.3.9
-      
-      # Verificar que el JAR existe antes de deployar
-      - name: List artifacts
-        run: ls -la target/
-      
-      # Aumentar el tiempo de espera y opciones de despliegue
-      - name: Deploy to Sandbox
-        run: |
-          mvn deploy -DmuleDeploy \
-          -DskipDeploymentVerification=true \
-          -DdeploymentTimeout=600000 \
-          -Dmaven.wagon.http.ssl.insecure=true \
-          -Dmaven.wagon.http.ssl.allowall=true \
-          -Danypoint.username="${{ secrets.ANYPOINT_PLATFORM_USERNAME }}" \
-          -Danypoint.password="${{ secrets.ANYPOINT_PLATFORM_PASSWORD }}" \
-          -Dencryption.key="${{ secrets.ENCRYPTION_KEY }}" \
-          --no-transfer-progress
+  deploy:     
+    needs: build     
+    runs-on: ubuntu-latest     
+    steps:         
+    - name: Checkout this repo       
+      uses: actions/checkout@v4     
+    - name: Set up JDK 1.8       
+      uses: actions/setup-java@v4       
+      with:         
+        distribution: 'zulu'         
+        java-version: 8
+    - name: Cache dependencies       
+      uses: actions/cache@v4       
+      with:         
+        path: ~/.m2/repository         
+        key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}         
+        restore-keys: |           
+          ${{ runner.os }}-maven-     
+    - name: Download artifacts
+      uses: actions/download-artifact@v4       
+      with:         
+        name: artifacts
+        path: target/
+    - name: Configure Maven settings with Anypoint credentials
+      run: |
+        mkdir -p ~/.m2
+        echo "<settings>
+          <servers>
+            <server>
+              <id>anypoint-exchange-v3</id>
+              <username>${{ secrets.ANYPOINT_PLATFORM_USERNAME }}</username>
+              <password>${{ secrets.ANYPOINT_PLATFORM_PASSWORD }}</password>
+            </server>
+          </servers>
+        </settings>" > ~/.m2/settings.xml
+    - name: Deploy to Sandbox
+  run: |
+    artifactName=$(ls *.jar | head -1)
+    mvn deploy -DmuleDeploy -DskipDeploymentVerification=true \
+      -Dmule.artifact=$artifactName \
+      -Danypoint.username="${{ secrets.ANYPOINT_PLATFORM_USERNAME }}" \
+      -Danypoint.password="${{ secrets.ANYPOINT_PLATFORM_PASSWORD }}" \
+      -Dencryption.key="${{ secrets.ENCRYPTION_KEY }}"        
