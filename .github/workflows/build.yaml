@@ -129,7 +129,7 @@ jobs:
           </settings>" > ~/.m2/settings.xml
 
       - name: Build with Maven
-        run: mvn -B clean package --file pom.xml
+        run: mvn -B clean package --file pom.xml -Dapp.runtime=4.4.0
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
@@ -180,6 +180,7 @@ jobs:
       - name: Clean install and Deploy to Sandbox
         run: |
           mvn clean install deploy -DmuleDeploy -DskipDeploymentVerification=true \
+          -Dapp.runtime=4.4.0 \
           -Danypoint.username="${{ secrets.ANYPOINT_PLATFORM_USERNAME }}" \
           -Danypoint.password="${{ secrets.ANYPOINT_PLATFORM_PASSWORD }}" \
           -Dencryption.key="${{ secrets.ENCRYPTION_KEY }}" \
