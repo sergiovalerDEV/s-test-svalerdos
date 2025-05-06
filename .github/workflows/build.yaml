@@ -23,8 +23,7 @@ jobs:
       with:         
         distribution: 'zulu'         
         java-version: 8  
-    # Configure Maven settings
-    - name: Configure Maven settings with Anypoint credentials
+    - name: Configure Maven settings
       run: |
         mkdir -p ~/.m2
         echo "<settings>
@@ -67,7 +66,7 @@ jobs:
       with:         
         name: artifacts
         path: target/
-    - name: Configure Maven settings with Anypoint credentials
+    - name: Configure Maven settings
       run: |
         mkdir -p ~/.m2
         echo "<settings>
@@ -80,47 +79,51 @@ jobs:
           </servers>
         </settings>" > ~/.m2/settings.xml
     
-    # Instalar jq para procesar JSON
-    - name: Install jq
-      run: sudo apt-get install -y jq
-    
-    # Eliminar la aplicación existente antes de desplegar
-    - name: Delete existing application
+    # Borrar aplicación existente
+    - name: Borrar aplicación existente
       run: |
-        # Obtener token de acceso
-        ACCESS_TOKEN=$(curl -s -X POST \
+        # Instalar jq para procesar JSON
+        sudo apt-get update && sudo apt-get install -y jq
+        
+        # Obtener token con las credenciales existentes
+        echo "Obteniendo token de acceso..."
+        TOKEN=$(curl -s -X POST \
           https://anypoint.mulesoft.com/accounts/api/v2/oauth2/token \
           -H "Content-Type: application/x-www-form-urlencoded" \
           -d "username=${{ secrets.ANYPOINT_PLATFORM_USERNAME }}&password=${{ secrets.ANYPOINT_PLATFORM_PASSWORD }}&grant_type=password" \
           | jq -r '.access_token')
         
-        # Verificar si se obtuvo el token
-        if [ -z "$ACCESS_TOKEN" ] || [ "$ACCESS_TOKEN" == "null" ]; then
-          echo "Error al obtener el token de acceso. Continuando con el despliegue..."
+        # Verificar token
+        if [ -z "$TOKEN" ] || [ "$TOKEN" == "null" ]; then
+          echo "Error al obtener token. Continuando con el despliegue..."
         else
-          echo "Token de acceso obtenido correctamente"
+          echo "Token obtenido correctamente"
           
-          # Intentar eliminar la aplicación existente
-          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -X DELETE \
+          # Borrar aplicación
+          echo "Borrando aplicación existente..."
+          RESULTADO=$(curl -s -w "\n%{http_code}" -X DELETE \
             "https://anypoint.mulesoft.com/cloudhub/api/v2/organizations/153b0d20-821e-4f82-b36a-7e0e28e44a93/environments/e5d7feb4-a658-436e-8915-5c79b9e15da9/applications/s-test-svalerdos" \
-            -H "Authorization: Bearer $ACCESS_TOKEN")
+            -H "Authorization: Bearer $TOKEN")
           
-          if [ "$HTTP_STATUS" == "204" ] || [ "$HTTP_STATUS" == "200" ]; then
-            echo "Aplicación eliminada correctamente"
-            # Esperar 30 segundos para asegurar que la eliminación se complete
-            echo "Esperando 30 segundos para que la eliminación se complete..."
-            sleep 30
-          elif [ "$HTTP_STATUS" == "404" ]; then
-            echo "La aplicación no existe o ya fue eliminada"
+          # Extraer código HTTP
+          HTTP_CODE=$(echo "$RESULTADO" | tail -n1)
+          
+          # Verificar resultado
+          if [ "$HTTP_CODE" == "204" ] || [ "$HTTP_CODE" == "200" ]; then
+            echo "✅ Aplicación borrada correctamente"
+            echo "Esperando 20 segundos para asegurar que se complete el borrado..."
+            sleep 20
+          elif [ "$HTTP_CODE" == "404" ]; then
+            echo "ℹ️ La aplicación no existe o ya fue borrada"
           else
-            echo "Error al eliminar la aplicación: HTTP Status $HTTP_STATUS"
-            echo "Continuando con el despliegue..."
+            echo "⚠️ Error al borrar la aplicación: HTTP $HTTP_CODE"
           fi
         fi
     
-    # Desplegar la nueva aplicación
-    - name: Deploy to Sandbox
+    # Desplegar nueva aplicación
+    - name: Desplegar a Sandbox
       run: |
+        echo "Desplegando aplicación..."
         mvn deploy -DmuleDeploy -DskipDeploymentVerification=true \
         -DskipMuleVersionCompatibilityCheck=true \
         -Dmule.artifact.deploy.muleVersion=4.6.0 \
