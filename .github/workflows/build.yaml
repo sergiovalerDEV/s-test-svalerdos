@@ -79,11 +79,51 @@ jobs:
             </server>
           </servers>
         </settings>" > ~/.m2/settings.xml
+    
+    # Instalar jq para procesar JSON
+    - name: Install jq
+      run: sudo apt-get install -y jq
+    
+    # Eliminar la aplicación existente antes de desplegar
+    - name: Delete existing application
+      run: |
+        # Obtener token de acceso
+        ACCESS_TOKEN=$(curl -s -X POST \
+          https://anypoint.mulesoft.com/accounts/api/v2/oauth2/token \
+          -H "Content-Type: application/x-www-form-urlencoded" \
+          -d "username=${{ secrets.ANYPOINT_PLATFORM_USERNAME }}&password=${{ secrets.ANYPOINT_PLATFORM_PASSWORD }}&grant_type=password" \
+          | jq -r '.access_token')
+        
+        # Verificar si se obtuvo el token
+        if [ -z "$ACCESS_TOKEN" ] || [ "$ACCESS_TOKEN" == "null" ]; then
+          echo "Error al obtener el token de acceso. Continuando con el despliegue..."
+        else
+          echo "Token de acceso obtenido correctamente"
+          
+          # Intentar eliminar la aplicación existente
+          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -X DELETE \
+            "https://anypoint.mulesoft.com/cloudhub/api/v2/organizations/153b0d20-821e-4f82-b36a-7e0e28e44a93/environments/e5d7feb4-a658-436e-8915-5c79b9e15da9/applications/s-test-svalerdos" \
+            -H "Authorization: Bearer $ACCESS_TOKEN")
+          
+          if [ "$HTTP_STATUS" == "204" ] || [ "$HTTP_STATUS" == "200" ]; then
+            echo "Aplicación eliminada correctamente"
+            # Esperar 30 segundos para asegurar que la eliminación se complete
+            echo "Esperando 30 segundos para que la eliminación se complete..."
+            sleep 30
+          elif [ "$HTTP_STATUS" == "404" ]; then
+            echo "La aplicación no existe o ya fue eliminada"
+          else
+            echo "Error al eliminar la aplicación: HTTP Status $HTTP_STATUS"
+            echo "Continuando con el despliegue..."
+          fi
+        fi
+    
+    # Desplegar la nueva aplicación
     - name: Deploy to Sandbox
       run: |
-          mvn deploy -DmuleDeploy -DskipDeploymentVerification=true \
-          -DskipMuleVersionCompatibilityCheck=true \
-          -Dmule.artifact.deploy.muleVersion=4.6.0 \
-          -Danypoint.username="${{ secrets.ANYPOINT_PLATFORM_USERNAME }}" \
-          -Danypoint.password="${{ secrets.ANYPOINT_PLATFORM_PASSWORD }}" \
-          -Dencryption.key="${{ secrets.ENCRYPTION_KEY }}"
+        mvn deploy -DmuleDeploy -DskipDeploymentVerification=true \
+        -DskipMuleVersionCompatibilityCheck=true \
+        -Dmule.artifact.deploy.muleVersion=4.6.0 \
+        -Danypoint.username="${{ secrets.ANYPOINT_PLATFORM_USERNAME }}" \
+        -Danypoint.password="${{ secrets.ANYPOINT_PLATFORM_PASSWORD }}" \
+        -Dencryption.key="${{ secrets.ENCRYPTION_KEY }}"
