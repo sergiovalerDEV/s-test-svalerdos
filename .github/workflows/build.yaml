@@ -179,7 +179,7 @@ jobs:
 
       - name: Deploy to Sandbox
         run: |
-          mvn deploy -X -DmuleDeploy -DskipDeploymentVerification=true \
+          mvn deploy -DmuleDeploy -DskipDeploymentVerification=true \
           -Danypoint.username="${{ secrets.ANYPOINT_PLATFORM_USERNAME }}" \
           -Danypoint.password="${{ secrets.ANYPOINT_PLATFORM_PASSWORD }}" \
           -Dencryption.key="${{ secrets.ENCRYPTION_KEY }}"
