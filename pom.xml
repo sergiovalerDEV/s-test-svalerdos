@@ -37,11 +37,10 @@
 						<provider>MC</provider>
 						<environment>Sandbox</environment>
 						<target>Cloudhub-US-East-2</target>
-						<overwrite>true</overwrite>
 						<muleVersion>${app.runtime}</muleVersion>
 						<username>${anypoint.username}</username>
 						<password>${anypoint.password}</password>
-						<applicationName>s-test-svalerdos</applicationName>
+						<applicationName>s-test-svalerdos-v1.0.7</applicationName>
 						<replicas>1</replicas>
 						<vCores>0.1</vCores>
 						<!-- Añadimos timeout y omitimos verificación -->
