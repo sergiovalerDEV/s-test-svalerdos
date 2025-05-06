@@ -46,7 +46,7 @@
 						<vCores>0.1</vCores>
 						<deploymentTimeout>600000</deploymentTimeout>
 						<skipDeploymentVerification>true</skipDeploymentVerification>
-						<forceStopApplicationOnRedeploy>true</forceStopApplicationOnRedeploy>
+						<!-- <forceStopApplicationOnRedeploy>true</forceStopApplicationOnRedeploy> -->
 						<ignoreVersionConflict>true</ignoreVersionConflict>
 						<deploymentSettings>
 							<enforceDeployingReplicasAcrossNodes>false</enforceDeployingReplicasAcrossNodes>
