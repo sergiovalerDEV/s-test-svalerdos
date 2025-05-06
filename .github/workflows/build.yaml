@@ -97,3 +97,4 @@ jobs:
             -Danypoint.username="${{ secrets.ANYPOINT_PLATFORM_USERNAME }}" \
             -Danypoint.password="${{ secrets.ANYPOINT_PLATFORM_PASSWORD }}" \
             -Dencryption.key="${{ secrets.ENCRYPTION_KEY }}"
+
