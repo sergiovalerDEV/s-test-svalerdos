@@ -31,7 +31,7 @@
 				<version>${mule.maven.plugin.version}</version>
 				<extensions>true</extensions>
 				<configuration>
-					<skipMuleVersionCompatibilityCheck>true</skipMuleVersionCompatibilityCheck>
+					<!-- <skipMuleVersionCompatibilityCheck>true</skipMuleVersionCompatibilityCheck> -->
 					<classifier>mule-application</classifier>
 					<cloudhub2Deployment>
 						<uri>https://anypoint.mulesoft.com</uri>
