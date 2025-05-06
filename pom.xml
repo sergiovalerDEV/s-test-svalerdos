@@ -14,8 +14,8 @@
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
 		<!-- Usando la versión que funciona en las otras aplicaciones -->
-		<app.runtime>4.9.0:3</app.runtime>
-		<mule.maven.plugin.version>4.4.0</mule.maven.plugin.version>
+		<app.runtime>4.9.3:3</app.runtime> <!-- Cambié a la versión LTS -->
+		<mule.maven.plugin.version>4.9.0</mule.maven.plugin.version> <!-- Cambié a la versión compatible con 4.9.x -->
 	</properties>
 
 	<build>
