@@ -36,8 +36,16 @@ jobs:
             </server>
           </servers>
         </settings>" > ~/.m2/settings.xml
-    - name: Build with Maven  
-      run: mvn -B clean package --file pom.xml
+    - name: Build with Maven
+      env:
+        ENCRYPTION_KEY: ${{ secrets.ENCRYPTION_KEY }}
+      run: |
+        # Eliminar dependencias problemáticas si existen
+        rm -rf ~/.m2/repository/com/github/everit-org
+        rm -rf ~/.m2/repository/org/everit
+        
+        # Compilar con parámetros necesarios
+        mvn -B clean package --file pom.xml -Ddecryption.key="${ENCRYPTION_KEY}" -Dencryption.key="${ENCRYPTION_KEY}"
     - name: Upload artifact        
       uses: actions/upload-artifact@v4       
       with:           
@@ -80,9 +88,86 @@ jobs:
           </servers>
         </settings>" > ~/.m2/settings.xml
     - name: Deploy to Sandbox
+      env:
+        ANYPOINT_USERNAME: ${{ secrets.ANYPOINT_PLATFORM_USERNAME }}
+        ANYPOINT_PASSWORD: ${{ secrets.ANYPOINT_PLATFORM_PASSWORD }}
+        ENCRYPTION_KEY: ${{ secrets.ENCRYPTION_KEY }}
       run: |
-          mvn deploy -DmuleDeploy -DskipDeploymentVerification=true \
-          -DskipMuleVersionCompatibilityCheck=true \
-          -Danypoint.username="${{ secrets.ANYPOINT_PLATFORM_USERNAME }}" \
-          -Danypoint.password="${{ secrets.ANYPOINT_PLATFORM_PASSWORD }}" \
-          -Dencryption.key="${{ secrets.ENCRYPTION_KEY }}"
+        # Instalar jq para procesar JSON
+        sudo apt-get update && sudo apt-get install -y jq
+        
+        # Obtener token de autenticación
+        echo "Obteniendo token de autenticación..."
+        TOKEN_RESPONSE=$(curl -s -X POST \
+          "https://anypoint.mulesoft.com/accounts/login" \
+          -H "Content-Type: application/json" \
+          -d "{\"username\":\"${ANYPOINT_USERNAME}\",\"password\":\"${ANYPOINT_PASSWORD}\"}")
+        
+        TOKEN=$(echo $TOKEN_RESPONSE | jq -r '.access_token')
+        
+        if [ -z "$TOKEN" ] || [ "$TOKEN" == "null" ]; then
+          echo "Error: No se pudo obtener el token de autenticación"
+          echo "Respuesta completa: $TOKEN_RESPONSE"
+          exit 1
+        fi
+        
+        echo "Token obtenido correctamente"
+        
+        # Obtener información de la organización y el entorno
+        echo "Obteniendo información de la organización..."
+        ORG_ID=$(curl -s -X GET \
+          "https://anypoint.mulesoft.com/accounts/api/me" \
+          -H "Authorization: Bearer ${TOKEN}" | jq -r '.user.organizationId')
+        
+        echo "ID de organización: $ORG_ID"
+        
+        echo "Obteniendo información del entorno Sandbox..."
+        ENV_RESPONSE=$(curl -s -X GET \
+          "https://anypoint.mulesoft.com/accounts/api/organizations/${ORG_ID}/environments" \
+          -H "Authorization: Bearer ${TOKEN}")
+        
+        ENV_ID=$(echo $ENV_RESPONSE | jq -r '.data[] | select(.name=="Sandbox") | .id')
+        
+        if [ -z "$ENV_ID" ] || [ "$ENV_ID" == "null" ]; then
+          echo "Error: No se pudo encontrar el entorno Sandbox"
+          echo "Respuesta: $ENV_RESPONSE"
+          exit 1
+        fi
+        
+        echo "ID de entorno Sandbox: $ENV_ID"
+        
+        # Verificar si la aplicación existe en CloudHub 2.0 usando la API de Runtime Manager
+        echo "Verificando si la aplicación s-test-svalerdos existe en CloudHub 2.0..."
+        
+        # Listar todas las aplicaciones en CloudHub 2.0
+        APPS_RESPONSE=$(curl -s -X GET \
+          "https://anypoint.mulesoft.com/amc/application-manager/api/v2/organizations/${ORG_ID}/environments/${ENV_ID}/deployments" \
+          -H "Authorization: Bearer ${TOKEN}")
+        
+        # Buscar la aplicación por nombre
+        APP_EXISTS=$(echo $APPS_RESPONSE | jq -r '.items[] | select(.name=="s-test-svalerdos") | .name')
+        
+        if [ ! -z "$APP_EXISTS" ] && [ "$APP_EXISTS" != "null" ]; then
+          echo "La aplicación s-test-svalerdos existe en CloudHub 2.0"
+          
+          # Obtener el ID de la aplicación
+          APP_ID=$(echo $APPS_RESPONSE | jq -r '.items[] | select(.name=="s-test-svalerdos") | .id')
+          echo "ID de la aplicación: $APP_ID"
+          
+          echo "La aplicación será actualizada automáticamente durante el despliegue"
+        else
+          echo "La aplicación s-test-svalerdos no existe en CloudHub 2.0, se creará una nueva instancia"
+        fi
+        
+        # Desplegar la aplicación con parámetros específicos para CloudHub 2.0
+        echo "Desplegando la aplicación..."
+        mvn deploy -DmuleDeploy \
+        -DskipDeploymentVerification=true \
+        -DskipMuleVersionCompatibilityCheck=true \
+        -Danypoint.username="${ANYPOINT_USERNAME}" \
+        -Danypoint.password="${ANYPOINT_PASSWORD}" \
+        -Ddecryption.key="${ENCRYPTION_KEY}" \
+        -Dencryption.key="${ENCRYPTION_KEY}" \
+        -Dapp.runtime=4.9.3 \
+        -Djava.version=17 \
+        -Dmule.artifact=$(ls target/*.jar | head -1)
