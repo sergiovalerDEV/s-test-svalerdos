@@ -122,8 +122,7 @@ output application/json
     </flow>
     <flow name="get:\accounts:s-test-svalerperez-config">
 		<salesforce:query doc:name="Query" doc:id="4b1b2126-0846-4adc-89a8-34d44dfd519c" config-ref="Salesforce_Config">
-			<salesforce:salesforce-query ><![CDATA[SELECT  Id, AccountId, LastName, FirstName, Salutation, Name, MailingStreet
-FROM Contact]]></salesforce:salesforce-query>
+			<salesforce:salesforce-query ><![CDATA[SELECT Id, Name, AccountNumber, Industry, Description, BillingStreet FROM Account]]></salesforce:salesforce-query>
 		</salesforce:query>
 		<ee:transform doc:name="Transform Message">
             <ee:message>
