@@ -171,3 +171,4 @@ jobs:
         -Dapp.runtime=4.9.3 \
         -Djava.version=17 \
         -Dmule.artifact=$(ls target/*.jar | head -1)
+        
