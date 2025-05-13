@@ -4,7 +4,7 @@
 
 	<groupId>153b0d20-821e-4f82-b36a-7e0e28e44a93</groupId>
 	<artifactId>s-test-svalerdos</artifactId>
-	<version>1.0.77</version>
+	<version>1.0.78</version>
 	<packaging>mule-application</packaging>
 
 	<name>s-test-svalerdos</name>
@@ -42,7 +42,7 @@
 						<password>${anypoint.password}</password>
 						<applicationName>s-test-svalerdos</applicationName>
 						<replicas>1</replicas>
-						<vCores>0.1</vCores>
+						<vCores>1</vCores>
 						<deploymentTimeout>300000</deploymentTimeout>
 						<skipDeploymentVerification>true</skipDeploymentVerification>
 						<!-- Añadido para compatibilidad con CloudHub 2.0 -->
