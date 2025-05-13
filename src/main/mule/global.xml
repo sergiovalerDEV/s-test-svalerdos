@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns:api-gateway="http://www.mulesoft.org/schema/mule/api-gateway" xmlns:secure-properties="http://www.mulesoft.org/schema/mule/secure-properties" xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd 
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
+http://www.mulesoft.org/schema/mule/secure-properties http://www.mulesoft.org/schema/mule/secure-properties/current/mule-secure-properties.xsd
+http://www.mulesoft.org/schema/mule/api-gateway http://www.mulesoft.org/schema/mule/api-gateway/current/mule-api-gateway.xsd">
+	
+	<http:listener-config name="s-test-svalerperez-httpListenerConfig">
+        <http:listener-connection host="0.0.0.0" port="8081" />
+    </http:listener-config>
+	
+	<apikit:config name="s-test-svalerperez-config" api="resource::153b0d20-821e-4f82-b36a-7e0e28e44a93:s-test-svalerperez:1.0.4:raml:zip:s-test-svalerperez.raml" outboundHeadersMapName="outboundHeaders" httpStatusVarName="httpStatus" />
+	<configuration-properties doc:name="Configuration properties" doc:id="2dc9ac9b-c8ad-4001-b044-3f61e66b6846" file="properties/${env}-config.yaml" />
+	<global-property doc:name="Global Property" doc:id="a053b734-8085-4493-aedd-2fe102b5be8e" name="env" value="dev" />
+	<salesforce:sfdc-config name="Salesforce_Config" doc:name="Salesforce Config" doc:id="8c65cdff-236c-488f-95f0-b165d6a144a4" >
+		<salesforce:basic-connection username="${secure::s-test-svalerdos.salesforce-credentials.salesforce.username}" password="testmulesoft0" securityToken="${secure::s-test-svalerdos.salesforce-credentials.salesforce.token}" url="${secure::s-test-svalerdos.salesforce-credentials.salesforce.url}" />
+	</salesforce:sfdc-config>
+	<secure-properties:config name="Secure_Properties_Config" doc:name="Secure Properties Config" doc:id="4f42a924-e681-48d5-a59d-09c801d534ce" file="properties/${env}-config.yaml" key="12345" >
+		<secure-properties:encrypt algorithm="Blowfish" />
+	</secure-properties:config>
+	<api-gateway:autodiscovery apiId="${api.id}" ignoreBasePath="true" doc:name="API Autodiscovery" doc:id="0191b1a3-7d4b-4582-abfa-f4d667b9cbb0" flowRef="s-test-svalerperez-main" />
+	<configuration-properties doc:name="Configuration properties" doc:id="6a364d42-0991-4a65-b7d6-c4c504e2450c" file="properties/${env}.properties" />
+</mule>

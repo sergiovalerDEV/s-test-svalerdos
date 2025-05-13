@@ -1,0 +1,6 @@
+s-test-svalerdos:
+  salesforce-credentials:
+    salesforce.username: "![zFxVMI0HIij2PAqNyJ77OrmUfw4INxvGqYbwUe8LwtI=]"
+    salesforce.password: "![Z2fYdR+WXtr4IxipT97WMA==]"
+    salesforce.token: "![U7QXJVjxWh/2Twi9vAIFoTNI4ocyFzMJAD5aI9WpsG8=]"
+    salesforce.url: "![zkX+z8aYErwWbaJtrpjZL57qUdh8MICf2D32K+K2UmPVDWCO4hlHCFa78jtN5wbTW31pXMUZdk0=]"
