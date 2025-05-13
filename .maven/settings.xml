@@ -8,8 +8,8 @@
   <servers>
     <server>
       <id>Repository</id>
-      <username>${env.ANYPOINT_USERNAME}</username>
-      <password>${env.ANYPOINT_PASSWORD}</password>
+      <username>~~~Client~~~</username>
+      <password>${client.id}~?~${client.secret}</password>
     </server>
   </servers>
 
