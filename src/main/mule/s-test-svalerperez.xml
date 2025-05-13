@@ -123,7 +123,7 @@ output application/json
     <flow name="get:\accounts:s-test-svalerperez-config">
         <salesforce:query doc:name="Query" doc:id="41656c3d-c4cc-4408-bf2b-e7629b9da12c" config-ref="Salesforce_Config">
 			<salesforce:salesforce-query ><![CDATA[SELECT Id, Name, AccountNumber, Industry, Description, BillingStreet	
-FROM Account]]></salesforce:salesforce-query>
+FROM Accccccount]]></salesforce:salesforce-query>
 		</salesforce:query>
 		<ee:transform doc:name="Transform Message">
             <ee:message>
