@@ -4,7 +4,7 @@
 
 	<groupId>153b0d20-821e-4f82-b36a-7e0e28e44a93</groupId>
 	<artifactId>s-test-svalerdos</artifactId>
-	<version>1.0.34</version> 
+	<version>1.0.35</version> 
 	<packaging>mule-application</packaging>
 
 	<name>s-test-svalerdos</name>
@@ -12,9 +12,8 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-
-		<app.runtime>4.4.0</app.runtime>
-		<mule.maven.plugin.version>4.3.0</mule.maven.plugin.version>
+		<app.runtime>4.4.0-20230320</app.runtime>
+		<mule.maven.plugin.version>3.8.0</mule.maven.plugin.version>
 	</properties>
 
 	<build>
@@ -40,7 +39,8 @@
 						<applicationName>${project.artifactId}</applicationName>
 						<releaseChannel>NONE</releaseChannel>
 						<replicas>1</replicas>
-						<vCores>0.1</vCores>
+						<vCores>0.5</vCores>
+						<javaVersion>1.8</javaVersion>
 						<deploymentSettings>
 							<generateDefaultPublicUrl>true</generateDefaultPublicUrl>
 						</deploymentSettings>
