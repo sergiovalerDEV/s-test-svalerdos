@@ -4,7 +4,7 @@
 
 	<groupId>153b0d20-821e-4f82-b36a-7e0e28e44a93</groupId>
 	<artifactId>s-test-svalerdos</artifactId>
-	<version>1.0.73</version>
+	<version>1.0.74</version>
 	<packaging>mule-application</packaging>
 
 	<name>s-test-svalerdos</name>
@@ -36,6 +36,7 @@
 						<provider>MC</provider>
 						<environment>Sandbox</environment>
 						<target>Cloudhub-US-East-2</target>
+						<server>Repository</server>  <!-- Este ID debe coincidir con el ID en settings.xml -->
 						<muleVersion>${app.runtime}</muleVersion>
 						<username>${anypoint.username}</username>
 						<password>${anypoint.password}</password>
