@@ -4,7 +4,7 @@
 
 	<groupId>153b0d20-821e-4f82-b36a-7e0e28e44a93</groupId>
 	<artifactId>s-test-svalerdos</artifactId>
-	<version>1.0.95</version>
+	<version>1.0.100</version>
 	<packaging>mule-application</packaging>
 
 	<name>s-test-svalerdos</name>
@@ -31,30 +31,26 @@
 				<extensions>true</extensions>
 				<configuration>
 					<cloudhub2Deployment>
-						<uri>https://anypoint.mulesoft.com</uri>
-						<provider>MC</provider>
-						<environment>Sandbox</environment>
-						<target>Cloudhub-US-East-2</target>
-						<server>Repository</server>  <!-- Este ID debe coincidir con el ID en settings.xml -->
-						<muleVersion>${app.runtime}</muleVersion>
-						<username>${anypoint.username}</username>
-						<password>${anypoint.password}</password>
-						<applicationName>s-test-svalerdos</applicationName>
+						<!-- Configuración existente -->
 						<replicas>1</replicas>
-						<vCores>0.5</vCores>
-						<deploymentTimeout>300000</deploymentTimeout>
-						<skipDeploymentVerification>true</skipDeploymentVerification>
-						<!-- Añadido para compatibilidad con CloudHub 2.0 -->
-						<javaVersion>17</javaVersion>
+						<vCores>0.5</vCores> <!-- Mínimo recomendado -->
 						<deploymentSettings>
 							<enforceDeployingReplicasAcrossNodes>false</enforceDeployingReplicasAcrossNodes>
-							<updateStrategy>rolling</updateStrategy>
+							<updateStrategy>recreate</updateStrategy> <!-- Cambiar de rolling a recreate -->
+							<forwardSslSession>false</forwardSslSession>
+							<lastMileSecurity>false</lastMileSecurity>
+							<clustered>false</clustered> <!-- Asegurarse de que no esté en modo cluster -->
+							<http>
+								<inbound>
+									<publicUrl>auto</publicUrl>
+								</inbound>
+							</http>
 						</deploymentSettings>
 						<properties>
-							<env>dev</env>
-							<!-- Aseguramos que la variable de encriptación sea correcta -->
-							<!-- <secure.key>${decryption.key}</secure.key> -->
-							<encryption.key>${encryption.key}</encryption.key>
+							<!-- Propiedades existentes -->
+							<mule.agent.application.properties.service.enabled>false</mule.agent.application.properties.service.enabled>
+							<mule.agent.logging.service.enabled>false</mule.agent.logging.service.enabled>
+							<!-- Desactivar servicios no esenciales -->
 						</properties>
 					</cloudhub2Deployment>
 				</configuration>
