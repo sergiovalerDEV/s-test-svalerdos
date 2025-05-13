@@ -18,21 +18,61 @@ jobs:
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-maven-
 
-      - name: Set up JDK 1.8
+      - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           distribution: "zulu"
           java-version: 17
       
-      - name: Publish to Exchange
+      # Crear o actualizar el archivo settings.xml con las credenciales
+      - name: Configure Maven settings.xml
         run: |
-          mvn deploy --settings .maven/settings.xml -DskipMunitTests \
+          mkdir -p ~/.m2
+          cat > ~/.m2/settings.xml << EOF
+          <settings>
+            <servers>
+              <server>
+                <id>anypoint-exchange-v3</id>
+                <username>${{ secrets.ANYPOINT_USERNAME }}</username>
+                <password>${{ secrets.ANYPOINT_PASSWORD }}</password>
+              </server>
+              <server>
+                <id>Repository</id>
+                <username>${{ secrets.ANYPOINT_USERNAME }}</username>
+                <password>${{ secrets.ANYPOINT_PASSWORD }}</password>
+              </server>
+              <server>
+                <id>mulesoft-releases</id>
+                <username>${{ secrets.ANYPOINT_USERNAME }}</username>
+                <password>${{ secrets.ANYPOINT_PASSWORD }}</password>
+              </server>
+            </servers>
+          </settings>
+          EOF
+      
+      # Paso para resolver dependencias antes de compilar
+      - name: Resolve dependencies
+        run: |
+          mvn dependency:resolve -s ~/.m2/settings.xml \
+          -Danypoint.username="${{ secrets.ANYPOINT_USERNAME }}" \
+          -Danypoint.password="${{ secrets.ANYPOINT_PASSWORD }}" \
           -Dclient.id="${{ secrets.CONNECTED_APP_CLIENT_ID }}" \
           -Dclient.secret="${{ secrets.CONNECTED_APP_CLIENT_SECRET }}"
+      
+      # Paso para compilar y publicar a Exchange
+      - name: Publish to Exchange
+        run: |
+          mvn clean deploy -s ~/.m2/settings.xml -DskipMunitTests \
+          -Danypoint.username="${{ secrets.ANYPOINT_USERNAME }}" \
+          -Danypoint.password="${{ secrets.ANYPOINT_PASSWORD }}" \
+          -Dclient.id="${{ secrets.CONNECTED_APP_CLIENT_ID }}" \
+          -Dclient.secret="${{ secrets.CONNECTED_APP_CLIENT_SECRET }}"
+      
+      # Paso para desplegar a CloudHub 2.0
       - name: Deploy to CloudHub 2.0
         run: |
-          mvn deploy --settings .maven/settings.xml -DskipMunitTests -DmuleDeploy \
-          -Dclient.id="${{ secrets.CONNECTED_APP_CLIENT_ID }}" \
-          -Dclient.secret="${{ secrets.CONNECTED_APP_CLIENT_SECRET }}" \
+          mvn deploy -s ~/.m2/settings.xml -DskipMunitTests -DmuleDeploy \
           -Danypoint.username="${{ secrets.ANYPOINT_USERNAME }}" \
-          -Danypoint.password="${{ secrets.ANYPOINT_PASSWORD }}"
+          -Danypoint.password="${{ secrets.ANYPOINT_PASSWORD }}" \
+          -Dclient.id="${{ secrets.CONNECTED_APP_CLIENT_ID }}" \
+          -Dclient.secret="${{ secrets.CONNECTED_APP_CLIENT_SECRET }}"
