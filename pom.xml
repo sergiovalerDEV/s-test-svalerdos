@@ -4,18 +4,16 @@
 
 	<groupId>153b0d20-821e-4f82-b36a-7e0e28e44a93</groupId>
 	<artifactId>s-test-svalerdos</artifactId>
-	<version>1.0.58</version> 
+	<version>1.0.59</version> 
 	<packaging>mule-application</packaging>
 
 	<name>s-test-svalerdos</name>
 
 	<properties>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-
-		<app.runtime>4.9.4</app.runtime>
-		<mule.maven.plugin.version>4.4.0</mule.maven.plugin.version>
-	</properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <mule.maven.plugin.version>4.1.1</mule.maven.plugin.version>
+    </properties>
 
 	<build>
 		<plugins>
