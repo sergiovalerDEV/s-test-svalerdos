@@ -41,7 +41,7 @@
 						<password>${anypoint.password}</password>
 						<applicationName>s-test-svalerdos</applicationName>
 						<replicas>1</replicas>
-						<vCores>0.5</vCores>
+						<vCores>0.9</vCores>
 						<deploymentTimeout>300000</deploymentTimeout>
 						<skipDeploymentVerification>true</skipDeploymentVerification>
 						<!-- Añadido para compatibilidad con CloudHub 2.0 -->
@@ -56,21 +56,6 @@
 							<!-- <secure.key>${decryption.key}</secure.key> -->
 							<encryption.key>${encryption.key}</encryption.key>
 						</properties>
-						<!-- Tolerations añadidos para permitir la programación en nodos con taints -->
-						<tolerations>
-							<toleration>
-								<key>rtfc.mulesoft.com/karpenter-nodegroup</key>
-								<operator>Equal</operator>
-								<value>true</value>
-								<effect>NoSchedule</effect>
-							</toleration>
-							<toleration>
-								<key>rtfc.mulesoft.com/core-nodegroup</key>
-								<operator>Equal</operator>
-								<value>true</value>
-								<effect>NoSchedule</effect>
-							</toleration>
-						</tolerations>
 					</cloudhub2Deployment>
 				</configuration>
 			</plugin>
