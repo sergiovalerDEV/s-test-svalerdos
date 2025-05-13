@@ -16,7 +16,7 @@
 		<properties>
 		<app.runtime>4.9.0</app.runtime>
 		<mule.maven.plugin.version>3.9.0</mule.maven.plugin.version> <!-- Cambio aquí -->
-</properties>
+	</properties>
 
 	</properties>
 
